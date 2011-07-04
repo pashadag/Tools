@@ -9,8 +9,6 @@
 #include<list>
 #include<cstdarg>
 #include<algorithm>
-#include "../include/logClass.h"
-#include "../include/optionsClass.h"
 
 using namespace std;
 
