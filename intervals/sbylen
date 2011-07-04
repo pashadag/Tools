@@ -1,0 +1,8 @@
+#!/bin/bash
+SHOW=$1
+if [ "${SHOW}" = "show" ]; then
+	awk '{ print $3 - $2 "\t" $0 }' | sort -k1n,1  
+else
+	awk '{ print $3 - $2, $0 }' | sort -k1n,1 | awk '{ $1 = ""; print $0 }' 
+
+fi

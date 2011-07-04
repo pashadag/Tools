@@ -1,0 +1,91 @@
+#!/usr/bin/perl
+use Getopt::Std;
+use strict;
+
+sub execCommand {
+	my $retval;
+	my ($command) = @_;
+	print stdout "Exec: $command...";
+	$retval  = `$command`;
+	if ( $? == -1 ) {
+		print stdout "command failed: $!";
+	}
+	print stdout "\n";
+	chomp $retval;
+	return $retval;
+}
+
+my %options=();
+my $maxMem;
+my $numThreads;
+my $inFilename;
+my $tmpDir;
+my $dummy;
+my $retval;
+my $i;
+
+print stdout "DON't Use this program, user regualr sort (with no S parameter) instaead";
+getopts("p:S:f:t:", \%options) or die(); 
+$numThreads = $options{p};
+if (defined $options{S}) {
+	$maxMem = $options{S};
+} else {
+	$maxMem = 1000000000;
+}
+if (defined $options{f}) {
+	$inFilename = $options{f};
+} else {
+	die "Input file (-f option) must be specified.\n";
+}
+
+if (defined $options{t}) {
+	$tmpDir = $options{t};
+} else {
+	$tmpDir = ".";	
+}
+
+print  stdout "\nUsing parameters:\n\tNumber of threads: $numThreads \n\tMaximum memory: "; 
+print  stdout "$maxMem \n\tFile to sort: $inFilename \n\tTemp dir: $tmpDir \n\n";
+
+my $numBytes;
+my $numLines;
+execCommand("rm -Rf $tmpDir");
+execCommand("mkdir -p $tmpDir");
+$retval = execCommand("wc $inFilename");
+($numLines, $dummy, $numBytes, $dummy) = split " ", $retval;
+
+print stdout "There are $numLines lines and $numBytes bytes in $inFilename.\n";
+
+execCommand("split -C $maxMem -d -a 2 $inFilename $tmpDir/$inFilename");
+
+my @files = split "\n", execCommand("ls $tmpDir");
+foreach my $file (@files) {
+	execCommand("sort $tmpDir/$file -S$maxMem > $tmpDir/$file.s");
+}
+
+my @curfiles = 0 .. scalar(@files) - 1;
+my @newfiles;
+my $curindex = scalar(@files);
+while (scalar(@curfiles) > 1) {
+	print stdout "Beginning round of merging, with @curfiles.\n";
+	for ($i = 0; $i < scalar(@curfiles); $i++) {
+		if ($i == $#curfiles) { #last element
+			push (@newfiles, $curfiles[$i]); #change the number here?
+		} else {
+			#merge
+			my $command = "sort -m -S" . $maxMem / 2 ;
+			$command .= sprintf " $tmpDir/$inFilename%02d.s $tmpDir/$inFilename%02d.s > $tmpDir/$inFilename%02d.s", $curfiles[$i], $curfiles[$i+1], $curindex;
+			execCommand ($command);
+			push (@newfiles, $curindex); 
+			$curindex++;
+			$i++;
+		}
+	}
+	@curfiles = @newfiles;
+	@newfiles = ();
+}
+print stdout "Finally @curfiles.\n";
+
+
+
+

@@ -1,0 +1,15 @@
+#!/usr/bin/python2.6
+import sys
+import math
+if len(sys.argv) != 4 :
+	print "Usage: %s n k p" % sys.argv[0] 
+	sys.exit()
+n=int(sys.argv[1])
+k=int(sys.argv[2])
+p=float(sys.argv[3])
+binomial=1
+for i in range(n,n-k, -1) :
+	binomial *= i
+binomial = binomial / float(math.factorial(k))
+result = ((1-p) ** (n-k)) * (p ** k) * binomial
+print result 

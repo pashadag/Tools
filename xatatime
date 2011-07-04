@@ -1,0 +1,25 @@
+#!/bin/sh
+IFS=$'\n'
+NUM_AT_A_TIME=$1
+
+nread=0
+cmnd=""
+while read line; do
+
+	cmnd[$nread]="${cmnd[$nread]} $line;"
+	nread=`expr $nread + 1`
+	if [ $nread = $NUM_AT_A_TIME ] 
+	then 
+		nread=0
+
+	fi	
+done
+
+
+
+
+for ((i=0; i < ${NUM_AT_A_TIME}; i++)) 
+do
+	echo "(${cmnd[$i]}) &"
+done
+

@@ -1,0 +1,1 @@
+awk -vOFS="\t" '{ print $0; tmp=$2; $2=$3; $3=tmp; print $0; }'

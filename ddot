@@ -1,0 +1,2 @@
+#!/bin/bash
+dot -Tpdf $1 -o `dirname $1`/`basename $1 .dot`.pdf 
