@@ -86,8 +86,9 @@ void mapp(suffixArray & sa, string inputMode, int col, bool fullMap) {
 					res2 = sa.find(revcomp(contig));
 				}
 				if (counter > 1) cout << "\t";
-				cout << contig;
+				//cout << contig;
 			}
+			cout << sbuf;
 			res = max(res,res2);
 			if (!fullMap && res != -1) {
 				cout << "\t" << "maps" << endl;
