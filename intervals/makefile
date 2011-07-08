@@ -23,7 +23,7 @@ CC    = g++
 #	$(CC) $(CFLAGS) $*.c # start with a tab character!!
 
 # Default target
-all: linkHit intContain intRemove intRemove2 intIntersect intSub intJoin 
+all: linkHit intContain intContain2 intRemove intRemove2 intIntersect intIntersect2 intSub intJoin 
 	@echo "compilation done"
 
 linkHit: linkHit.o
