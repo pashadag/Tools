@@ -4,11 +4,23 @@ CC    = g++
 
 
 # Default target
-all: myjoin filter_genome ins_sort add_commas
+all: myjoin filter_genome ins_sort add_commas sbsJoin sbsJoin2 sbsJoin3
 	@echo "compilation done"
 
-acc_commas: add_commas.o
-	$(CC) acc_commas.o -o add_commas
+sbsJoin3: sbsJoin3.o
+	$(CC) sbsJoin3.o -o sbsJoin3
+sbsJoin3.o : sbsJoin3.cpp
+	$(CC) -c $(COPT) sbsJoin3.cpp -o sbsJoin3.o
+sbsJoin2: sbsJoin2.o
+	$(CC) sbsJoin2.o -o sbsJoin2
+sbsJoin2.o : sbsJoin2.cpp
+	$(CC) -c $(COPT) sbsJoin2.cpp -o sbsJoin2.o
+sbsJoin: sbsJoin.o
+	$(CC) sbsJoin.o -o sbsJoin
+sbsJoin.o : sbsJoin.cpp
+	$(CC) -c $(COPT) sbsJoin.cpp -o sbsJoin.o
+add_commas: add_commas.o
+	$(CC) add_commas.o -o add_commas
 add_commas.o : add_commas.cpp
 	$(CC) -c $(COPT) add_commas.cpp -o add_commas.o
 ins_sort: ins_sort.o
