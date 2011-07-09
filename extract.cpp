@@ -11,13 +11,11 @@
 #include<queue>
 #include<cstdarg>
 #include<algorithm>
-#include "../../include/logClass.h"
-#include "../../include/optionsClass.h"
 
+#include "dbtools/defs.h"
 
 
 using namespace std;
-optionsClass opt;
 char buf[500];
 bool INTERACTIVE = true;
 bool skipN = false;
