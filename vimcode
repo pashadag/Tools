@@ -1,0 +1,2 @@
+#!/bin/sh
+eval 'vim `ls -1 *.cpp *.c *.pl *.py *.h *.sh makefile project_files`'

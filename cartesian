@@ -1,0 +1,4 @@
+#!/bin/sh
+while read a; do while read b; do echo "$b	$a"; done < $1; done < $2; 
+#awk 'NR==FNR { a[$0]; next } { for (i in a) print i, $0 }' $1 $2
+

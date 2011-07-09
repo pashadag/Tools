@@ -1,0 +1,6 @@
+#!/bin/sh
+IFS=$'\n'
+PROJECT=$1
+RUN=$2
+files=`cat $PROJECT | tr '\n' ' ' | sed 's/$RUN/'$RUN/g`
+eval "vim $files"
