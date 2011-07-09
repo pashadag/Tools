@@ -1,0 +1,60 @@
+
+Format for Interval File:
+
+* each line is : chr leftpos rightpos. For example, chr1 100 102
+* Intervals are assumed to contain the endpoints
+* leftpos must be less then or equal to rightpos
+* a sorted interval file means it is sorted first alphabetically by chr and then numerically by leftpos 
+
+
+
+intIntersect
+
+* This program takes as input:
+ (1) stdin, a non-overlapping sorted interval file
+ (2) first parameter -- a non-overlapping sorted interval file 
+* The output is the set of intervals from 1 that intersect with at least one interval from 2 
+
+
+
+intIntersect2
+
+Same as intIntersect except the first parameter is just a single interval on the command line.
+
+
+
+intJoin
+
+* stdin: a sorted interval file
+* output: a sorted intervals where overlapping intervals have been merged 
+
+
+
+intRemove
+
+This program takes as input:
+1) stdin, an interval file
+2) the first parameter: a non-overlapping sorted interval file.
+The output is the set of intervals from 1 neither of whose endpoints are contained in an interval from 2.
+
+
+
+intRemove2
+
+Same as intIntersect except the first parameter is just a single interval on the command line.
+
+
+
+intSub
+
+This program takes as input:
+
+1) stdin, a non-overlapping sorted interval file, with an optional fourth column containing labels for each interval.
+
+2) first parameter -- a non-overlapping sorted interval file.
+
+The output is the set of intervals from 1 that do not intersect with anything from 2.
+
+The intervals that do overlap are chopped up so as to remove the intervals from 2.
+
+The labels are maintained during chopping 
