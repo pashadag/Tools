@@ -4,7 +4,7 @@ CC    = g++
 
 
 # Default target
-all: myjoin filter_genome ins_sort add_commas sbsJoin sbsJoin2 sbsJoin3 extract
+all: myjoin filter_genome ins_sort add_commas sbsJoin sbsJoin2 sbsJoin3 extract concat
 	@echo "compilation done"
 
 sbsJoin3: sbsJoin3.o
@@ -39,6 +39,10 @@ extract: extract.o
 	$(CC) extract.o -o extract 
 extract.o : extract.cpp
 	$(CC) -c $(COPT) extract.cpp -o extract.o
+concat: concat.o
+	$(CC) concat.o -o concat
+concat.o : concat.cpp
+	$(CC) -c $(COPT) concat.cpp -o concat.o
 
 
 # Target deleting unwanted files
