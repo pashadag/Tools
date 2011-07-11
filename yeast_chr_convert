@@ -1,0 +1,18 @@
+awk  -vcol=$1 '{ if ($col == "chr1") $col = "chrI"; 
+if ($col == "chr1") $col = "chrI"; 
+if ($col == "chr2") $col = "chrII"; 
+if ($col == "chr3") $col = "chrIII"; 
+if ($col == "chr4") $col = "chrIV"; 
+if ($col == "chr5") $col = "chrV"; 
+if ($col == "chr6") $col = "chrVI"; 
+if ($col == "chr7") $col = "chrVII"; 
+if ($col == "chr8") $col = "chrVIII"; 
+if ($col == "chr9") $col = "chrIX"; 
+if ($col == "chr10") $col = "chrX"; 
+if ($col == "chr11") $col = "chrXI"; 
+if ($col == "chr12") $col = "chrXII"; 
+if ($col == "chr13") $col = "chrXIII"; 
+if ($col == "chr14") $col = "chrXIV"; 
+if ($col == "chr15") $col = "chrXV"; 
+if ($col == "chr16") $col = "chrXVI"; 
+print $0 }'
