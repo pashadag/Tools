@@ -241,6 +241,26 @@ void maskLines(int col) {
 
 }
 
+void calcnstat(int nval) { //n50 or whatever
+	string sbuf;
+	vector<long> nums;
+	long totSum = 0;
+	while (getline(cin, sbuf)) {
+		long len = sbuf.length();
+		nums.push_back(len);
+		totSum += len;
+	}
+	sort(nums.begin(), nums.end());
+	long cursum = 0;
+	double midval = totSum * ((100 - nval) / (double) 100);
+	for (int i = 0; i < nums.size(); i++) {
+		cursum += nums[i];
+		if (cursum > midval) {
+			cout << "N50\t" << nums[i] << endl;
+			return;
+		}
+	}
+}
 
 
 void usage(int argc, char * argv[]) {
@@ -265,6 +285,9 @@ void usage(int argc, char * argv[]) {
 	cerr << endl;
 	cerr << "Usage: " << argv[0] << " cov -g genome -o output_file" << endl;
 	cerr << "\tThis program takes raw reads in, maps them to genome.fa/sa, and outputs a binary double array to output_file.\n";
+	cerr << endl;
+	cerr << "Usage: " << argv[0] << " n50 {-n val}" << endl;
+	cerr << "\tThis program takes raw contigs in, and calculates the n50 score.  If val is specified, then the n\"val\" is calculate (n90, for example).\n";
 	exit(1);
 }
 
@@ -277,13 +300,14 @@ int main(int argc, char * argv[]) {
 	string genomeBase;
 	string base;
 	string inputMode = "fasta";
+	int nval = 50;
 	int column = -1;
 	int kmersize = -1;
 	bool fullMap = false;
 
 	char ch;
 
-	while ((ch = getopt(argc, argv, "l:g:k:o:c:i:f")) != -1) {
+	while ((ch = getopt(argc, argv, "l:g:k:n:o:c:i:f")) != -1) {
 		switch (ch) {
 			case 'g':
 				genomeBase = optarg;
@@ -291,6 +315,9 @@ int main(int argc, char * argv[]) {
 				break;
 			case 'k':
 				kmersize = atoi(optarg);
+				break;
+			case 'n':
+				nval = atoi(optarg);
 				break;
 			case 'l':
 				column = atoi(optarg);
@@ -370,6 +397,8 @@ int main(int argc, char * argv[]) {
 		raw2fa();
 	} else if (task == "fq2raw") {
 		fq2raw();
+	} else if (task == "n50") {
+		calcnstat(nval);
 	} else {
 		cerr << "Unknown task: " << task << endl;
 		exit(1);

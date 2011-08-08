@@ -7,6 +7,7 @@
 #include<cstdlib>
 #include<vector>
 #include<map>
+#include<set>
 #include<list>
 #include<queue>
 #include<cstdarg>
@@ -22,6 +23,7 @@ class edge {
 		int from;
 		int to;
 		int length;
+		int seqStart; //genomic location corresponding to the start of the sequence along this edge.
 		bool operator<(const edge & e) const {
 			if (from != e.from)  return from < e.from;
 			return to < e.to;
@@ -34,7 +36,7 @@ class edge {
 };
 
 ostream & operator<<(ostream & o, const edge & e) {
-	o << e.from << "\t" << e.to << "\t" << e.length;
+	o << e.from << "\t" << e.to << "\t" << e.length << "\t" << e.seqStart;
 	return o;
 
 }
@@ -59,7 +61,24 @@ struct compltFunctor {
 	int genSize;
 };
 
+struct compeqEdgeSequenceFunctor {
+	bool operator()(edge x, edge y) const {
+		if (x.from == y.from && x.to == y.to && genome.substr(x.seqStart, x.length) == genome.substr(y.seqStart, y.length)) return true;
+		return false;
+	}
+	string genome;
+};
 
+
+struct compltEdgeSequenceFunctor {
+	bool operator()(edge x, edge y) const {
+		if (x.from < y.from) return true; else if (x.from > y.from) return false;
+		if (x.to < y.to) return true; else if (x.to > y.to) return false;
+		return (genome.substr(x.seqStart, x.length) < genome.substr(y.seqStart, y.length));
+	}
+	string genome;
+};
+	
 class collapsed_db_from_genome {
 	public:
 		string genome;
@@ -97,9 +116,9 @@ class collapsed_db_from_genome {
 				char c;
 				line >> c;
 				if (c == 'E') {
-					int from, to, length;
-					line >> from >> to >> length;
-					edge e; e.from = from; e.to = to; e.length = length;
+					int from, to, length, seqStart;
+					line >> from >> to >> length >> seqStart;
+					edge e; e.from = from; e.to = to; e.length = length; e.seqStart = seqStart;
 					edges.push_back(e);
 				} else if (c == 'B') {
 					int val;
@@ -124,8 +143,9 @@ class collapsed_db_from_genome {
 			ofstream out;
 			open_file(out, filename);
 			out << "digraph DB {" << endl;
-			for (int i = 1; i < edges.size(); i++) {
-				out << edges[i].from << " -> " << edges[i].to << " [ label = \"" << edges[i].length << "\" ]; " << endl;
+			for (int i = 0; i < edges.size(); i++) {
+				out << edges[i].from << " -> " << edges[i].to << " [ label = \"" << edges[i].length <<  "\" ]; " << endl;
+				//out << edges[i].from << " -> " << edges[i].to << " [ label = \"" << edges[i].length << "_" << edges[i].seqStart <<  "\" ]; " << endl;
 			}
 			out << "}" << endl;
 			out.close();
@@ -162,7 +182,7 @@ class collapsed_db_from_genome {
 
 		void build() {
 			vector<int> sa;
-			vector<int> saback;
+			vector<int> saback; //gen2sa
 
 			cout << "Building suffix array...\n";
 			for (int i = 0; i < genSize; i++) {
@@ -210,24 +230,43 @@ class collapsed_db_from_genome {
 				}
 			}
 
+			//there is a bug here if the graph is just a single loop
 			cout << "Walking the genome and adding edges.\n";
 			for (int i = 0; i < genSize; i++) {
 				if (!branching[saback[i]]) continue;
 				edge e;
 				int ff = fastfwd(saback,i+1);
-				//Use this version to have nodes in collapsed graph numbered consecutively
-				//e.from = sa2node[saback[i]];
-				//e.to   = sa2node[saback[ff]];
 
-				//Use this version to have nodes in collapsed graph be locations in genome.
-				e.from = sa[saback[i]];
-				e.to   = sa[saback[ff]];
+				e.from = sa2node[saback[i]];
+				e.to   = sa2node[saback[ff]];
+				e.seqStart = i;
 				e.length = (ff - i + genSize) % genSize;
 				edges.push_back(e);
+				//cout << "Adding " << e.from << " --> " << e.to << endl;
 			}
 
 			sort(edges.begin(), edges.end()); 
 		}
+		
+		void removeIdenticalEdges() {
+			compltEdgeSequenceFunctor complt;
+			complt.genome = genome;
+			compeqEdgeSequenceFunctor compeq;
+			compeq.genome = genome;
+			sort(edges.begin(), edges.end(), complt);
+			edges.erase(unique(edges.begin(), edges.end(), compeq), edges.end());
+			return;
+		}
+
+		void writeEdgeSeqs(string filename) {
+			ofstream out;
+			open_file(out, filename);
+			for (int i = 0; i < edges.size(); i++) {
+				out << genome.substr(edges[i].seqStart, edges[i].length) << endl;
+			}
+			out.close();
+		}
+
 
 	private:
 		int fastfwd(const vector<int> & saback, int cur) {
@@ -235,10 +274,7 @@ class collapsed_db_from_genome {
 			while (!branching[saback[cur]]) cur = (cur + 1) % genSize;
 			return cur;
 		}
-
-
-
-
 };
+
 
 

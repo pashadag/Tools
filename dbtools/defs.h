@@ -19,6 +19,12 @@
 
 using namespace std;
 
+template<class T>
+string make_string(const T & s) {
+	ostringstream o;
+	o << s;
+	return o.str();
+}
 
 template<class T, class U>
 ostream & operator << (ostream &out, const map<T,U> & m) {
@@ -27,6 +33,18 @@ ostream & operator << (ostream &out, const map<T,U> & m) {
 		out << it->first << " -> " << it->second << endl;
 	}
 	return out;
+}
+
+//print a sparce vector of vectors (only positions with "goodVal" are printed)
+template<class T>
+string print_sparce(const vector<vector<T > > & v, T goodVal){
+	string retval = "";
+	for (int i = 0; i < v.size(); i++) {
+		for (int j = 0; j < v[i].size(); j++) {
+			if (v[i][j] == goodVal) retval += make_string(i) + " " + make_string(j) + ", ";
+		} 
+	}
+	return retval;
 }
 
 //print vector of vectors
@@ -238,6 +256,19 @@ bool get_row_whitespace (istream & inFile, vector<string> & row ) {  //read a ta
 	return true;
 }
 
+bool get_row_whitespace (istream & inFile, vector<string> & row, string & strLine ) {  //read a tab delimited line from file
+	string s;
+	row.clear();
+	getline(inFile, strLine);
+	if (inFile.eof()) return false;
+	istringstream lineStream(strLine);
+
+	while (lineStream >> s) {
+		row.push_back(s);
+	}
+	return true;
+}
+
 char revcomp (char s) {
 	if (s == 'A') return 'T';
 	else if (s == 'C') return 'G';
@@ -342,12 +373,7 @@ void maskStrings(vector<string> & strings) {
 	}
 }
 
-template<class T>
-string make_string(const T & s) {
-	ostringstream o;
-	o << s;
-	return o.str();
-}
+
 
 string add_commas(int num) {
 	string s, retval;
