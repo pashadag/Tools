@@ -15,7 +15,7 @@ struct hit {
 	int end;
 	double score;
 	char strand;
-	char errors[40];
+	char errors[80];
 	int numErrors;
 };
 
