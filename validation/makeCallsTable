@@ -1,0 +1,12 @@
+#!/bin/sh
+IFS=$'\n'
+RUN=$1
+CALLS=$2
+
+
+echo "Building calls table..."
+echo "chr from to call ratio ulen %gsv %kidd %segdup %bentley %yoon" > ${CALLS}.table
+addRates $RUN ${CALLS} | bestOverlap ~/cnv/datasets/gsv_all | bestOverlap ~/cnv/datasets/kidd_loss_all | bestOverlap ~/cnv/hg18/segDups | bestOverlap ~/cnv/datasets/bentley1_all | bestOverlap ~/cnv/datasets/yoon_all >> ${CALLS}.table
+
+#cp ${CONTIG}.cnvs.merged.cnvs.rates.interval.tmp ../tracks/
+#formatdata interval ${CONTIG}.cnvs.merged.cnvs.rates.interval.tmp ../tracks/${CONTIG}.cnvs.merged.cnvs.rates.interval

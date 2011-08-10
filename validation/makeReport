@@ -1,0 +1,195 @@
+#!/bin/sh
+
+runname=$1
+chrname=$2
+results_dir=${SVN_BASE}/cnv/results/${chrname}/working.$1
+echo Report for run $1 and chromosome $2 > report.txt
+echo "Figure 1: Size correlation between our calls and the Database of Genomic Variants (DGV)" >> report.txt
+cp ${results_dir}/val/${chrname}.cnvs.merged.cnvs-dgv_all.p2v.val..eps ./figure1.eps
+
+echo "Figure 2: Zoom in on Figure 1. " >> report.txt
+cp ${results_dir}/val/${chrname}.cnvs.merged.cnvs-dgv_all.v2p.val.?*.eps ./figure2.eps
+
+echo "Figure 3: Length distribution of our calls"  >> report.txt
+cp ${results_dir}/val/${chrname}.cnvs.merged.cnvs.lendist.eps ./figure3.eps
+
+echo "Figure 4: The sensitivity and specificty as measured with respect to decreasing confidence levels of our calls."  >> report.txt
+cp ${results_dir}/val/decrConf.roc.eps ./figure4.eps
+
+cp ${results_dir}/val/summary.txt .
+cp ${results_dir}/val/smother.txt .
+
+gain_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+gain_loss=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+gain_all=`cat summary.txt | grep -v "dgv_all.loss" | grep -v "dgv_all.gain" | grep -A 2 ".cnvs.gain.cnvs-dgv_all" |   tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+loss_gain=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+loss_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+loss_all=`cat summary.txt | grep -v "dgv_all.loss" | grep -v "dgv_all.gain" | grep -A 2 ".cnvs.loss.cnvs-dgv_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+all_gain=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+all_loss=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+all_all=`cat summary.txt | grep -v gain | grep -v loss | grep -v gain |   grep -A 2 ".cnvs.merged.cnvs-dgv_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+sv_gain=`cat summary.txt | grep -A 2 "svs.merged-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+sv_loss=`cat summary.txt | grep -A 2 "svs.merged-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+#sv_indel=`cat summary.txt | grep -A 2 "svs-dgv_indel" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+sv_all=`cat summary.txt | grep -v loss | grep -v gain | grep -A 2 "svs.merged-dgv_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+sv_coll=`cat summary.txt | grep -A 2 "svs.merged-coll_ins" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+sv_abc8=`cat summary.txt | grep -A 2 "svs.merged-kidd_ins_abc8_all" | tail -1 |  awk '{ if (($9 + $8) > 0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+shuf_gain=`cat summary.txt | grep -v "dgv_all.loss" | grep -v "dgv_all.gain" | grep -A 2 ".cnvs.gain.shuffle.cnvs-dgv_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_loss=`cat summary.txt | grep -v "dgv_all.loss" | grep -v "dgv_all.gain" |  grep -A 2 ".cnvs.loss.shuffle.cnvs-dgv_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_gain_g=`cat summary.txt | grep -A 2 ".cnvs.gain.shuffle.cnvs-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_loss_g=`cat summary.txt | grep -A 2 ".cnvs.loss.shuffle.cnvs-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_gain_l=`cat summary.txt | grep -A 2 ".cnvs.gain.shuffle.cnvs-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_loss_l=`cat summary.txt | grep -A 2 ".cnvs.loss.shuffle.cnvs-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_ins_all=`cat summary.txt | grep -v "dgv_all.loss" | grep -v "dgv_all.gain" |  grep -A 2 "svs.shuffle-dgv_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_ins_gain=`cat summary.txt |  grep -A 2 "svs.shuffle-dgv_all.gain" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_ins_loss=`cat summary.txt |  grep -A 2 "svs.shuffle-dgv_all.loss" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+shuf_ins_coll=`cat summary.txt | grep -A 2 "svs.shuffle-coll_ins_all" | tail -1 | awk '{ print $3" / "$2" = "$4"%" }'`
+
+echo >> report.txt
+echo >> report.txt
+echo "True positive rates of our CNV calls, compared against the DGV.  The ratio is between our predictions that overlap DGV and our total number of predictions." >> report.txt
+echo >> report.txt
+echo "                    DGV gain                    DGV loss                       DGV  all                coll_Ins " >> report.txt
+echo "Our gain   " ${gain_gain} "       " ${gain_loss} "           " ${gain_all} >> report.txt
+echo "Our loss   " ${loss_gain} "       " ${loss_loss} "           " ${loss_all} >> report.txt
+echo "Our all    " ${all_gain}  "       " ${all_loss}  "           " ${all_all} >> report.txt
+echo "Our ins    " ${sv_gain}   "       " ${sv_loss}   "           " ${sv_all} "       " ${sv_coll} >> report.txt
+echo "Shuf gain  " ${shuf_gain_g} "       " ${shuf_gain_l} "           " ${shuf_gain} >> report.txt
+echo "Shuf loss  " ${shuf_loss_g} "       " ${shuf_loss_l} "           " ${shuf_loss} >> report.txt
+echo "Shuf ins   " ${shuf_ins_gain} "       " ${shuf_ins_loss} "           " ${shuf_ins_all}  "       " ${shuf_ins_coll} >> report.txt
+
+echo >> report.txt
+echo Percentage of kidds ins on abc8 that overlaps our ins is ${sv_abc8}. >> report.txt
+
+
+
+loss_smother=`cat smother.txt | grep -A 1 ".cnvs.loss.cnvs" | tail -1 | awk '{print $2}'`
+gain_smother=`cat smother.txt | grep -A 1 ".cnvs.gain.cnvs" | tail -1 | awk '{print $2}'`
+all_smother=`cat smother.txt | grep -A 1 ".cnvs.merged.cnvs" | tail -1 | awk '{print $2}'`
+svs_smother=`cat smother.txt | grep -A 1 ".svs" | tail -1 | awk '{print $2}'`
+coll_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "coll_ins" | tail -1 | awk '{print $2}'`
+dgv_loss_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "dgv_all.loss" | tail -1 | awk '{print $2}'`
+dgv_gain_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "dgv_all.gain" | tail -1 | awk '{print $2}'`
+dgv_all_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -v gain | grep -v loss | grep -A 1 "dgv_all"      | tail -1 | awk '{print $2}'`
+kidd_loss_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "kidd_loss_all" | tail -1 | awk '{print $2}'`
+kidd_gain_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "kidd_gain_all" | tail -1 | awk '{print $2}'`
+kidd_all_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "kidd_all" | tail -1 | awk '{print $2}'`
+cooper_all_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "cooper.all.hg18" | tail -1 | awk '{print $2}'`
+svs_indel_smother=`cat ${SVN_BASE}/cnv/datasets/smother.txt | grep -A 1 "dgv_indel" | tail -1 | awk '{print $2}'`
+
+
+
+echo >> report.txt
+echo Percentage of genome covered >> report.txt
+echo >> report.txt
+echo "          us          DGV            Kidd          " >> report.txt
+echo "loss : " ${loss_smother} "     " ${dgv_loss_smother} "       " ${kidd_loss_smother} ""  >> report.txt
+echo "gain : " ${gain_smother} "     " ${dgv_gain_smother} "       " ${kidd_gain_smother} ""  >> report.txt
+echo " all : " ${all_smother}  "     " ${dgv_all_smother}  "       " ${kidd_all_smother}  ""  >> report.txt
+echo >> report.txt
+echo >> report.txt
+echo "Dataset		Smother" >> report.txt
+echo ".svs		" ${svs_smother} >> report.txt
+echo "coll_ins		" ${coll_smother} >> report.txt
+echo "cooper		" ${cooper_all_smother} >> report.txt
+
+
+
+
+
+#kgg=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-kidd_gain" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+kgl=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-kidd_loss" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+#klg=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-kidd_gain" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+kll=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-kidd_loss" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+#kag=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-kidd_gain" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+kal=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-kidd_loss" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+
+
+
+echo >> report.txt
+echo "Percentage of Kidd's calls on ABC8 that are overlapped by our calls" >> report.txt
+echo >> report.txt
+echo "                   Our gain                     Our loss                        Our all " >> report.txt
+#echo "Kidd gain " ${kgg} "       " ${klg} "           " ${kag} >> report.txt
+echo "Kidd loss " ${kgl} "       " ${kll} "           " ${kal} >> report.txt
+
+
+#kgg=`cat summary.txt | grep -A 2 ".cnvs.gain.shuffle.cnvs-kidd_gain" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+kgl=`cat summary.txt | grep -A 2 ".cnvs.gain.shuffle.cnvs-kidd_loss" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+#klg=`cat summary.txt | grep -A 2 ".cnvs.loss.shuffle.cnvs-kidd_gain" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+kll=`cat summary.txt | grep -A 2 ".cnvs.loss.shuffle.cnvs-kidd_loss" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+
+
+
+echo >> report.txt
+echo "Percentage of Kidd's calls on ABC8 that are overlapped by the shuffled calls" >> report.txt
+echo >> report.txt
+echo "                Shuffle gain                  Shuffle loss " >> report.txt
+#echo "Kidd gain " ${kgg} "       " ${klg}  >> report.txt
+echo "Kidd loss " ${kgl} "       " ${kll}  >> report.txt
+
+
+c_dup_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-cooper.dup.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_del_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-cooper.del.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_null_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-cooper.null.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_all_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-cooper.all.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_dup_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-cooper.dup.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_del_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-cooper.del.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_null_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-cooper.null.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_all_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-cooper.all.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_dup_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-cooper.dup.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_del_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-cooper.del.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_null_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-cooper.null.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+c_all_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-cooper.all.hg18" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+
+
+
+m_0_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.0.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_0_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.0.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_0_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.0.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_1_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.1.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_1_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.1.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_1_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.1.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_2_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.2.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_2_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.2.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_2_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.2.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_3_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.3.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_3_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.3.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_3_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.3.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_4_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.4.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_4_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.4.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_4_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.4.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_5_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.5.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_5_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.5.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_5_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.5.s.j.cnvs" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_min_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.min" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_min_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.min" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_min_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.min" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_max_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.max" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_max_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.max" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_max_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.max" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_mima_gain=`cat summary.txt | grep -A 2 ".cnvs.gain.cnvs-mcc.mima" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_mima_loss=`cat summary.txt | grep -A 2 ".cnvs.loss.cnvs-mcc.mima" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+m_mima_all=`cat summary.txt | grep -A 2 ".cnvs.merged.cnvs-mcc.mima" | tail -1 | awk '{ if (($9 + $8) >0 ) print $8 " / " $8 + $9 " = " $8 / ($9+$8); else print "      NA" }'`
+
+
+
+echo >> report.txt
+echo "Percentage of Cooper et al's calls on ABC8 that are overlapped by our calls" >> report.txt
+echo >> report.txt
+echo "                                 Our gain                     Our loss                        Our all " >> report.txt
+echo "Cooper duplications     " ${c_dup_gain} "       " ${c_dup_loss} "           " ${c_dup_all} >> report.txt
+echo "Cooper homozygous dels  " ${c_null_gain} "       " ${c_null_loss} "           " ${c_null_all} >> report.txt
+echo "Cooper hemizyogou dels  " ${c_del_gain} "       " ${c_del_loss} "           " ${c_del_all} >> report.txt
+echo "Cooper all              " ${c_all_gain} "       " ${c_all_loss} "           " ${c_all_all} >> report.txt
+echo "McCarroll 0             " ${m_0_gain} "   " ${m_0_loss} "    " ${m_0_all} >> report.txt
+echo "McCarroll 1             " ${m_1_gain} "   " ${m_1_loss} "    " ${m_1_all} >> report.txt
+echo "McCarroll 2             " ${m_2_gain} "   " ${m_2_loss} "    " ${m_2_all} >> report.txt
+echo "McCarroll 3             " ${m_3_gain} "   " ${m_3_loss} "    " ${m_3_all} >> report.txt
+echo "McCarroll 4             " ${m_4_gain} "   " ${m_4_loss} "    " ${m_4_all} >> report.txt
+echo "McCarroll 5             " ${m_5_gain} "   " ${m_5_loss} "    " ${m_5_all} >> report.txt
+echo "McCarroll min           " ${m_min_gain} "   " ${m_min_loss} "    " ${m_min_all} >> report.txt
+echo "McCarroll max           " ${m_max_gain} "   " ${m_max_loss} "    " ${m_max_all} >> report.txt
+echo "McCarroll min+max       " ${m_mima_gain} "   " ${m_mima_loss} "    " ${m_mima_all} >> report.txt
+
+

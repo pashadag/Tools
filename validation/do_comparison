@@ -1,0 +1,16 @@
+#!/bin/sh
+IFS=$'\n'
+COMP_FILE=$1
+for line in `grep -h -v  "#" ${COMP_FILE}`
+do
+	echo Comparing ${line}...
+	FIRST=`echo $line | awk '{ print $1 }'`
+	SECOND=`echo $line | awk '{ print $2 }'`
+	JOINT=`basename ${FIRST}`"-"`basename ${SECOND}`
+	python ${SVN_BASE}/cnv/validation/general_validation.py ${SVN_BASE}/$FIRST ${SVN_BASE}/$SECOND $JOINT > ${JOINT}.out
+	#python ${SVN_BASE}/cnv/validation/general_validation.py ${SVN_BASE}/$FIRST ${SVN_BASE}/$SECOND $JOINT 100000 > ${JOINT}.out
+	echo $JOINT 
+	grep -h "#" ${JOINT}.out 
+done
+
+

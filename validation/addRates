@@ -1,0 +1,41 @@
+#!/bin/sh
+IFS=$'\n'
+RUN=$1
+CALLS=$2
+
+## SEGWALKER VERSION (hardcoded for 2010.06.08 run)
+for line in `grep -h -v  "#" ${CALLS}`
+do
+	CONTIG=`echo $line | awk '{ print $1 }'`
+	FROM=`echo $line | awk '{ print $2 }'`
+	TO=`echo $line | awk '{ print $3  }'`
+
+	RATE=`segwalker $CONTIG $FROM $TO | tail -1 | awk '{ print $3}'`
+	echo $line $RATE
+done
+
+exit
+
+## EDGEWALKER VERSION (slower)
+for line in `grep -h -v  "#" ${CALLS}`
+do
+	CONTIG=`echo $line | awk '{ print $1 }'`
+	FROM=`echo $line | awk '{ print $2 }'`
+	TO=`echo $line | awk '{ print $3  }'`
+
+
+	INFO=`~misko/apps/bin/edgewalker  ${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${CONTIG}.graphinfo ${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${CONTIG}.problem.out $FROM ${TO} | awk  '{ if ($6 >= 0) print  $12, $14, $17 }' | tr ':' ' ' | awk -vl=0 -vex=0 -vact=0 '{ act=act+$1; l=l+$2; ex=ex+$4; printf "%f %f ", act, ex; print l;}' | tail -1`
+	LEN=`echo ${INFO} | awk '{ print  $3 }'`
+	EX=`echo ${INFO} | awk '{ print  $2 }'`
+	if [ `echo "$EX == 0" | bc` = "1" ]; then
+		#echo $line " nan " $LEN
+		echo $line " nan " 
+	else
+		RATE1=`echo ${INFO} | awk '{ print  "scale=2; " $1 " / " $2 }'`
+		RATE=`echo ${RATE1} | bc`
+		#echo $line $RATE $LEN
+		echo $line $RATE 
+	fi
+done
+
+

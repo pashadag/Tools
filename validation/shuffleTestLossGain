@@ -1,0 +1,76 @@
+#!/bin/sh
+IFS=$'\n'
+LOSS_FILE=$1
+GAIN_FILE=$2
+VAL_FILE=$3
+NUM_TRIALS=$4
+WHICHWAY=$5
+
+JOINT=`basename ${LOSS_FILE}`-`basename ${VAL_FILE}`-shuf
+
+
+both_list=""
+missed_list=""
+loss_only_list=""
+gain_only_list=""
+
+
+mkdir -p results
+for ((i=1; i <= NUM_TRIALS ; i++))  
+do
+	python ${SVN_BASE}/cnv/validation/shuffle_predictions.py ${LOSS_FILE} > ${JOINT}.loss.shuf
+	python ${SVN_BASE}/cnv/validation/shuffle_predictions.py ${GAIN_FILE} > ${JOINT}.gain.shuf
+	cat ${JOINT}.loss.shuf ${JOINT}.gain.shuf | sort -k1,1 -k2n,2 > ${JOINT}.both.shuf
+
+	python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.both.shuf ${VAL_FILE} $JOINT > ${JOINT}.out
+
+	if [ "${WHICHWAY}" = "v2p" ]
+	then
+		total=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $7 }'`
+		some=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $8 }'`
+
+		python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.loss.shuf ${VAL_FILE} $JOINT > ${JOINT}.out
+		loss=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $8 }'`
+
+		python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.gain.shuf ${VAL_FILE} $JOINT > ${JOINT}.out
+		gain=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $8 }'`
+		echo "$total $some $loss $gain"
+
+	else
+		total=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $2 }'`
+		some=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $3 }'`
+
+		python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.loss.shuf ${VAL_FILE} $JOINT > ${JOINT}.out
+		loss=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $3 }'`
+
+		python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.gain.shuf ${VAL_FILE} $JOINT > ${JOINT}.out
+		gain=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $3 }'`
+		echo "$total $some $loss $gain"
+	fi
+
+	missed=`echo $total - $some | bc`
+	both=`echo $loss + $gain - $some | bc`
+	loss_only=`echo $loss - $both | bc`
+	gain_only=`echo $gain - $both | bc`
+
+	missed_list=`echo $missed_list $missed`
+	both_list=`echo $both_list $both`
+	loss_only_list=`echo $loss_only_list $loss_only`
+	gain_only_list=`echo $gain_only_list $gain_only`
+done
+
+if [ "$NUM_TRIALS" -ne "0" ]; then
+	missed_mean=`echo $missed_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+	missed_sd=`echo $missed_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+	both_mean=`echo $both_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+	both_sd=`echo $both_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+	loss_only_mean=`echo $loss_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+	loss_only_sd=`echo $loss_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+	gain_only_mean=`echo $gain_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+	gain_only_sd=`echo $gain_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+
+	echo "# missed_mean both_mean loss_only_mean gain_only_mean missed_sd both_sd loss_only_sd gain_only_sd"
+	printf "#\t${missed_mean}\t${both_mean}\t${loss_only_mean}\t${gain_only_mean}\t${missed_sd}\t${both_sd}\t${loss_only_sd}\t${gain_only_sd}\n"
+fi
+
+

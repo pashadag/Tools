@@ -1,0 +1,7 @@
+#!/bin/sh
+RUN=$1
+cat ~/cnv/chrom_list | awk -v run=$RUN '{ print "chr" $1 "/working." run }' | sort -k1,1 > ${RUN}jobs
+cat ${RUN}jobs | awk -v run=$RUN '{ print "echo", $1; print "cat", $1 "/val/summary.txt | extractPoints " run "sumpoints " }' | sh | sbsJoin3 0 " " > ${RUN}summary
+cat ${RUN}jobs | awk -v run=$RUN '{ print "echo", $1; print "cat", $1 "/val/smother.txt | extractPoints " run "smopoints " }' | sh | sbsJoin3 0 " " > ${RUN}smother
+join ${RUN}smother ${RUN}summary > ${RUN}all
+

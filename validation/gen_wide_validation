@@ -1,0 +1,172 @@
+#!/bin/sh
+IFS=$'\n'
+RUN=$1
+CONTIG=$2
+
+RESULTS_DIR=${SVN_BASE}/cnv/results
+NUM_SHUF_TRIALS=0
+#CNV_FILE_EXTENSION="cnvs"
+CNV_FILE_EXTENSION="cnvs_cut1000.supsmoo.supersmooth.cut1000"
+
+echo Using extension $CNV_FILE_EXTENSION
+if [ "${CONTIG}" = "every" ]
+then
+	for line in `cat ${SVN_BASE}/cnv/chrom_list`
+	do
+		CONTIG=chr${line}
+		echo Doing ${CONTIG}...
+		$0 $RUN ${CONTIG}
+	done
+else 
+	if [ "${CONTIG}" = "all" ]
+	then 
+		echo Merging files
+
+		rm -Rf ${SVN_BASE}/cnv/results/all/working.${RUN}
+		mkdir -p ${SVN_BASE}/cnv/results/all/working.${RUN}
+
+		for line in `cat ${SVN_BASE}/cnv/chrom_list`
+		do
+			CONTIG=`echo ${line} | awk '{print "chr" $1}'`
+			cat ${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${CONTIG}.${CNV_FILE_EXTENSION} >> ${SVN_BASE}/cnv/results/all/working.${RUN}/all.${CNV_FILE_EXTENSION}
+
+		done
+		CONTIG=all
+	else 
+		if [ "${CONTIG}" = "auto" ]
+		then 
+			echo Merging files
+
+			rm -Rf ${SVN_BASE}/cnv/results/all/working.${RUN}
+			mkdir -p ${SVN_BASE}/cnv/results/all/working.${RUN}
+
+			for line in `cat ${SVN_BASE}/cnv/chrom_list | grep -v chrX | grep -v chrY`
+			do
+				CONTIG=`echo ${line} | awk '{print "chr" $1}'`
+				cat ${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${CONTIG}.${CNV_FILE_EXTENSION} >> ${SVN_BASE}/cnv/results/all/working.${RUN}/all.${CNV_FILE_EXTENSION}
+
+			done
+			CONTIG=auto
+		fi
+
+	fi	
+
+	echo Merging cnvs
+	sudo chgrp cnv ${RESULTS_DIR}/${CONTIG}/working.${RUN}
+	cd ${RESULTS_DIR}/${CONTIG}/working.${RUN}
+	rm -Rf val
+	mkdir -p  val
+	cd val
+	#cp ../*.cnvs .
+	cp ${RESULTS_DIR}/${CONTIG}/working.${RUN}/${CONTIG}.${CNV_FILE_EXTENSION} ./${CONTIG}.cnvs
+
+
+	/bin/ls -1 *cnvs* > val_files
+	cartesian val_files ${SVN_BASE}/cnv/validation/pred_files | sed s/CHR/_${CONTIG}/| awk -F '\t' '{ print $1 $2, $3 }' > comp_list
+	for line3 in `cat val_files`
+	do
+		partition ${line3}
+	done
+
+
+	echo Doing Summary2
+	echo -n >> summary2.txt
+	echo -n "NumCalls " >> summary2.txt
+	NUM_CALLS=`cat ${CONTIG}.cnvs.merged.cnvs | wc -l`
+	echo $NUM_CALLS >> summary2.txt
+	echo -n "Smother " >> summary2.txt
+	calc_smother ${CONTIG}.cnvs.merged.cnvs auto | awk '{ print $2 }' >> summary2.txt
+	GSV_OVERLAP=`cat ${CONTIG}.cnvs.merged.cnvs | bestOverlap ${SVN_BASE}/cnv/datasets/gsv_all full4 | awk '{ if ($NF > 0) print $0 }' | wc -l`
+	echo -n "Calls overlapping gsv " >> summary2.txt
+	echo "scale=2; $GSV_OVERLAP / $NUM_CALLS" | bc >> summary2.txt
+	DGV_OVERLAP=`cat ${CONTIG}.cnvs.merged.cnvs | bestOverlap ${SVN_BASE}/cnv/datasets/dgv_all full4 | awk '{ if ($NF > 0) print $0 }' | wc -l`
+	echo -n "Calls overlapping dgv " >> summary2.txt
+	echo "scale=2; $DGV_OVERLAP / $NUM_CALLS" | bc >> summary2.txt
+
+	echo -n "Bases overlapping gsv " >> summary2.txt
+	intOverlap.sh ${CONTIG}.cnvs.merged.cnvs ${SVN_BASE}/cnv/datasets/gsv_all | awk '{print $2}' >> summary2.txt
+
+	#BEN_OVERLAP=`cat ${CONTIG}.cnvs.merged.cnvs | bestOverlap ${SVN_BASE}/cnv/datasets/bentley1_all full4 | awk '{ if ($NF > 0) print $0 }' | wc -l`
+	#echo -n "Calls overlapping bentley " >> summary2.txt
+	#echo "scale=2; $BEN_OVERLAP / $NUM_CALLS" | bc >> summary2.txt
+	#v2p_calls=`cat ${SVN_BASE}/cnv/datasets/bentley1_auto | wc -l`
+	#v2p_BEN_OVERLAP=`cat ${SVN_BASE}/cnv/datasets/bentley1_auto | bestOverlap ${CONTIG}.cnvs.merged.cnvs full4 | awk '{ if ($NF > 0) print $0 }' | wc -l`
+	#echo -n "Ben's calls overlapping ours " >> summary2.txt
+	#echo "scale=2; $v2p_BEN_OVERLAP / $v2p_calls" | bc >> summary2.txt
+
+
+	v2p_calls=`cat ${SVN_BASE}/cnv/datasets/kidd_loss_auto | wc -l`
+	v2p_overlap=`cat ${SVN_BASE}/cnv/datasets/kidd_loss_auto | bestOverlap ${CONTIG}.cnvs.merged.cnvs full4 | awk '{ if ($NF > 0) print $0 }' | wc -l`
+	echo -n "Kidd's calls overlapping ours " >> summary2.txt
+	echo "scale=2; $v2p_overlap / $v2p_calls" | bc >> summary2.txt
+
+	cat ~/cnv/datasets/kidd_uber_loss_all | bestOverlap  $CONTIG.cnvs.merged.cnvs full4 |  fscore | awk '{ print $1"\t"$2"\t"$3"\t"$5"\t"$6"\t"$7"\t"$8 }' | sort -k7n,7 > uberResults.txt
+	uber_num=`cat uberResults.txt | awk '{if ($7 > 0.9) print $0 }' | wc -l`
+	echo -n "Uber calls with f>0.9, out of 17: $uber_num, which is " >> summary2.txt
+	echo "scale=2; $uber_num / 17" | bc >> summary2.txt
+
+	echo >> summary2.txt
+	valSensChart.sh ${CONTIG}.cnvs auto >> summary2.txt
+
+	exit
+
+	export DISPLAY= # this is needed for matlab to run properly on 102
+	cp ${SVN_BASE}/cnv/validation/plot_length_distribution* .
+	./plot_length_distribution ./${CONTIG}.cnvs.merged.cnvs
+
+	echo SMOTHER RESULTS \# >  smother.txt; 
+
+	echo Calculating smother and plot length distribution
+	for line2 in `/bin/ls -1 *cnvs`
+	do
+		echo ${line2} >> smother.txt
+		calc_smother ${line2} ${CONTIG} >> smother.txt
+		#./plot_length_distribution ${line2} 
+	done
+
+	#only when we have the confidence scores
+	#python plot_sensitivity_and_specificity.py ${CONTIG}.cnvs ${SVN_BASE}/cnv//datasets/dgv_all $[SVN_BASE}/cnv//datasets/kidd_loss_${CONTIG} ${CONTIG} decrConf
+
+	echo About to compare predictions
+	mkdir results 
+	rm -rf summary.txt
+	cp ${SVN_BASE}/cnv/validation/cnv_call_size_correlation.m .
+	for line4 in `grep -h -v  "#" comp_list`
+	do
+		echo Comparing ${line4}...
+		FIRST=`echo $line4 | awk '{ print $1 }'`	
+		SECOND=`echo $line4 | awk '{ print $2 }'`	
+		JOINT=${FIRST}"-"${SECOND}
+		#add last parameter as 100000 to print plots, but this no longer seems to work.
+		python ${SVN_BASE}/cnv/validation/general_validation.py $FIRST ${SVN_BASE}/cnv/datasets/$SECOND $JOINT > ${JOINT}.out
+		cp results/${JOINT}* .
+		echo $JOINT >> summary.txt
+		grep -h "#" ${JOINT}.out >> summary.txt
+	done
+
+	echo Doing shuffle tests, with ${NUM_SHUF_TRIALS} trials...
+	for line5 in `grep -h -v  "#" comp_list`
+	do
+		echo Shuffle test for ${line5}...
+		FIRST=`echo $line5 | awk '{ print $1 }'`
+		SECOND=`echo $line5 | awk '{ print $2 }'`
+		JOINT=`basename ${FIRST}`".shuf-"`basename ${SECOND}`
+		shuffleTest $FIRST ${SVN_BASE}/cnv/datasets/$SECOND $JOINT ${NUM_SHUF_TRIALS} >> summary.txt
+	done
+
+	echo Making tracks for debut...
+	if [ "${CONTIG}" != "all" ]
+	then 
+		makeTracks $RUN ${CONTIG} debut
+	else 
+		uber_num=`cat ~/cnv/datasets/kidd_uber_loss_all | bestOverlap  $CONTIG.cnvs.merged.cnvs full4 |  fscore | awk '{if ($8 > 0.9) print $0 }' | wc -l`
+		echo "$uber_num (Uber calls with f > 0.9)" >> summary.txt
+
+	fi
+
+
+
+	#cp ${CONTIG}.cnvs.merged.cnvs.rates.interval.tmp ../tracks/
+	#formatdata interval ${CONTIG}.cnvs.merged.cnvs.rates.interval.tmp ../tracks/${CONTIG}.cnvs.merged.cnvs.rates.interval
+	#makeCallsTable ${RUN} ${CONTIG}.cnvs.merged.cnvs
+fi

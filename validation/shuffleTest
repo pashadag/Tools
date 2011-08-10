@@ -1,0 +1,38 @@
+#!/bin/sh
+IFS=$'\n'
+PRED_FILE=$1
+VAL_FILE=$2
+JOINT=$3
+NUM_TRIALS=$4
+
+correct_list=""
+correct_mean=0
+missed_list=""
+missed_mean=0
+
+for ((i=1; i <= NUM_TRIALS ; i++))  
+do
+	echo Doing trial $i...
+	python ${SVN_BASE}/cnv/validation/shuffle_predictions.py ${PRED_FILE} > ${PRED_FILE}.shuf
+	python ${SVN_BASE}/cnv/validation/general_validation.py ${PRED_FILE}.shuf ${VAL_FILE} $JOINT > ${JOINT}.out
+	correct=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $3 }'`
+	missed=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $9 }'`
+	correct_list=`echo $correct_list $correct`
+	missed_list=`echo $missed_list $missed`
+done
+
+if [ "$NUM_TRIALS" -ne "0" ]; then
+	correct_mean=`echo $correct_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+	correct_sd=`echo $correct_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+	missed_mean=`echo $missed_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+	missed_sd=`echo $missed_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+	pred_tot=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $2 }'`
+	val_tot=`grep -h "#" ${JOINT}.out | tail -1 | awk '{ print $7 }'`
+	correct_perc=`echo "scale=2; $correct_mean / $pred_tot" | bc`
+	missed_perc=`echo "scale=2; $missed_mean / $val_tot" | bc`
+
+	echo "#	pred	tp	tp%	stdev	#vals	missed	missed%	stdev	trials"
+	printf "#\t${pred_tot}\t${correct_mean}\t${correct_perc}\t%.2f\t${val_tot}\t${missed_mean}\t${missed_perc}\t%.2f\t${NUM_TRIALS}\n" ${correct_sd} ${missed_sd}
+fi
+
+

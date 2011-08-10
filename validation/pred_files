@@ -1,0 +1,129 @@
+.merged.cnvs	gsv_all
+.merged.cnvs	yoonCHR  
+.merged.cnvs	dgv_all 
+.merged.cnvs	kidd_lossCHR
+.merged.cnvs	bentley1CHR 
+#
+.loss.cnvs	bentley1CHR 
+.gain.cnvs	bentley1CHR 
+.loss.cnvs	mcc.minCHR 
+.gain.cnvs	mcc.minCHR 
+.merged.cnvs	mcc.minCHR 
+.loss.cnvs	mcc.maxCHR 
+.gain.cnvs	mcc.maxCHR 
+.merged.cnvs	mcc.maxCHR 
+.loss.cnvs	mcc.0.s.j.cnvs  
+.gain.cnvs	mcc.0.s.j.cnvs 
+.merged.cnvs	mcc.0.s.j.cnvs
+.loss.cnvs	dgv_all 
+.loss.cnvs	dgv_all.loss 
+.loss.cnvs	dgv_all.gain 
+.gain.cnvs	dgv_all 
+.gain.cnvs	dgv_all.loss 
+.gain.cnvs	dgv_all.gain 
+.loss.cnvs	kidd_lossCHR 
+.gain.cnvs	kidd_lossCHR 
+#
+.loss.cnvs	yoon_delCHR #
+.gain.cnvs	yoon_dupCHR #
+.loss.cnvs	yoon_dupCHR #
+.gain.cnvs	yoon_delCHR #
+.merged.cnvs	yoon_delCHR #
+.merged.cnvs	yoon_dupCHR #
+.loss.cnvs	yoonCHR #
+.gain.cnvs	yoonCHR #
+.loss.cnvs	gsv_all #
+.gain.cnvs	gsv_all #
+#
+.justsegs.merged.cnvs	dgv_all #
+.nosegs.merged.cnvs	dgv_all # 
+.justsegs.merged.cnvs	gsv_all # 
+.nosegs.merged.cnvs	gsv_all #
+.justsegs.merged.cnvs	yoonCHR #
+.justsegs.merged.cnvs	kidd_lossCHR #
+.justsegs.merged.cnvs	dgv_all #
+.justsegs.merged.cnvs	bentley1CHR #	
+#
+.justsegs.gain.cnvs	dgv_all #
+.justsegs.gain.cnvs	dgv_all #
+.justsegs.gain.cnvs	dgv_all.gain #
+.justsegs.gain.cnvs	dgv_all.loss #
+.justsegs.loss.cnvs	dgv_all #
+.justsegs.loss.cnvs	dgv_all.gain #
+.justsegs.loss.cnvs	dgv_all.loss #
+.justsegs.merged.cnvs	dgv_all #
+.justsegs.merged.cnvs	dgv_all.gain #
+.justsegs.merged.cnvs	dgv_all.loss #
+.justsegs.merged.cnvs	kidd_lossCHR #
+.justsegs.loss.cnvs	kidd_lossCHR #
+.justsegs.gain.cnvs	kidd_lossCHR #
+.justsegs.loss.cnvs	bentley1CHR #
+.justsegs.gain.cnvs	bentley1CHR #
+.justsegs.merged.cnvs	bentley1CHR #
+.justsegs.loss.cnvs	mcc.0.s.j.cnvs  #
+.justsegs.gain.cnvs	mcc.0.s.j.cnvs  #
+.justsegs.merged.cnvs	mcc.0.s.j.cnvs  #
+.justsegs.loss.cnvs	mcc.minCHR #
+.justsegs.gain.cnvs	mcc.minCHR #
+.justsegs.merged.cnvs	mcc.minCHR #
+.justsegs.loss.cnvs	mcc.maxCHR #
+.justsegs.gain.cnvs	mcc.maxCHR #
+.justsegs.merged.cnvs	mcc.maxCHR #
+.nosegs.gain.cnvs	dgv_all #
+.nosegs.gain.cnvs	dgv_all.gain #
+.nosegs.gain.cnvs	dgv_all.loss #
+.nosegs.loss.cnvs	dgv_all #
+.nosegs.loss.cnvs	dgv_all.gain #
+.nosegs.loss.cnvs	dgv_all.loss #
+.nosegs.merged.cnvs	dgv_all #
+.nosegs.merged.cnvs	dgv_all.gain #
+.nosegs.merged.cnvs	dgv_all.loss #
+.nosegs.merged.cnvs	kidd_lossCHR #
+.nosegs.loss.cnvs	kidd_lossCHR #
+.nosegs.gain.cnvs	kidd_lossCHR #
+.nosegs.loss.cnvs	bentley1CHR #
+.nosegs.gain.cnvs	bentley1CHR #
+.nosegs.merged.cnvs	bentley1CHR #
+.nosegs.loss.cnvs	mcc.0.s.j.cnvs  #
+.nosegs.gain.cnvs	mcc.0.s.j.cnvs  #
+.nosegs.merged.cnvs	mcc.0.s.j.cnvs  #
+.nosegs.loss.cnvs	mcc.minCHR #
+.nosegs.gain.cnvs	mcc.minCHR #
+.nosegs.merged.cnvs	mcc.minCHR #
+.nosegs.loss.cnvs	mcc.maxCHR #
+.nosegs.gain.cnvs	mcc.maxCHR #
+.nosegs.merged.cnvs	mcc.maxCHR #
+#
+.loss.cnvs	kidd_ins_abc8CHR #
+.gain.cnvs	kidd_ins_abc8CHR #
+.merged.cnvs	kidd_ins_abc8CHR #
+.merged.cnvs	mcc.mimaCHR #
+.loss.cnvs	mcc.mimaCHR #
+.gain.cnvs	mcc.mimaCHR #
+.loss.cnvs	cooper.del.hg18 #
+.loss.cnvs	cooper.dup.hg18 #
+.loss.cnvs	cooper.null.hg18 #
+.loss.cnvs	cooper.all.hg18 #
+.gain.cnvs	cooper.del.hg18 #
+.gain.cnvs	cooper.dup.hg18 #
+.gain.cnvs	cooper.null.hg18 #
+.gain.cnvs	cooper.all.hg18 #
+.merged.cnvs	cooper.del.hg18 #
+.merged.cnvs	cooper.dup.hg18 #
+.merged.cnvs	cooper.null.hg18 #
+.merged.cnvs	cooper.all.hg18 #
+.loss.cnvs	mcc.1.s.j.cnvs #
+.loss.cnvs	mcc.2.s.j.cnvs #
+.loss.cnvs	mcc.3.s.j.cnvs #
+.loss.cnvs	mcc.4.s.j.cnvs #
+.loss.cnvs	mcc.5.s.j.cnvs #
+.gain.cnvs	mcc.1.s.j.cnvs #
+.gain.cnvs	mcc.2.s.j.cnvs #
+.gain.cnvs	mcc.3.s.j.cnvs #
+.gain.cnvs	mcc.4.s.j.cnvs #
+.gain.cnvs	mcc.5.s.j.cnvs #
+.merged.cnvs	mcc.1.s.j.cnvs #
+.merged.cnvs	mcc.2.s.j.cnvs #
+.merged.cnvs	mcc.3.s.j.cnvs #
+.merged.cnvs	mcc.4.s.j.cnvs #
+.merged.cnvs	mcc.5.s.j.cnvs #

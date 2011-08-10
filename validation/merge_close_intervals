@@ -1,0 +1,19 @@
+#!/bin/sh
+
+if test $# -ne 2
+then
+    echo "usage: $0 <interval file> <forgiveness>" >&2
+    exit 1
+fi
+
+tmp=/tmp/$$_`basename $1`.tmp
+
+trap "rm -f $tmp" 0 1 2 3 15
+
+echo "sorting interval file" >&2
+sort -k1,1 -k2n,2 $1 > $tmp
+
+echo "merging overlapping intervals" >&2
+python ${SVN_BASE}/cnv/validation/merge_close_intervals.py $tmp $2 
+
+echo "done" >&2

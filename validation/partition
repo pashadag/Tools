@@ -1,0 +1,39 @@
+#!/bin/sh
+#cp /home/share/cnv/code/prediction/merge_close_intervals* .
+cat $1 | sort -k1,1 -k2n,2 >  $1.all.cnvs
+
+#cat $SVN_BASE/cnv/hg18/contig_break_hg18.txt | awk '{ if (($8 == "centromere") || ($8 == "telomere")) print $2, $3-1000000, $4 + 1000000; else print $2, $3, $4 }' | awk '{ if ($2 < 0) $2 = 0; print $0 }' | sort -k1,1 -k2n,2 | intJoin > forbidden
+#cat $1 | intSub forbidden | awk '{ if (($3 - $2) > 1000) print $0 }' > $1.delthis
+#cat $1.delthis | ~misko/apps/bin/merge_intervals.py 5  > $1.merged.cnvs
+
+#remove calls in telo/centromeres.
+cat $SVN_BASE/cnv/hg18/contig_break_hg18.txt | awk '{ print $2, $3, $4 }' | awk '{ if ($2 < 0) $2 = 0; print $0 }' | sort -k1,1 -k2n,2 | intJoin > forbidden
+ cat $1.all.cnvs | intSub forbidden | awk '{ if (($3 - $2) > 1000) print $0 }' > $1.merged.cnvs
+
+cat $1.merged.cnvs | awk '{ if ($4 <= -1) print $0 }' > $1.loss.cnvs
+cat $1.merged.cnvs | awk '{ if ($4 >= 1 ) print $0 }' > $1.gain.cnvs
+cat $1.merged.cnvs |  intRemove ${SVN_BASE}/cnv/hg18/segDups > $1.nosegs.merged.cnvs; 
+cat $1.merged.cnvs $1.nosegs.merged.cnvs | sort | uniq -u | sort -k1,1 -k2n,2  > $1.justsegs.merged.cnvs 
+cat $1.nosegs.merged.cnvs | awk '{ if ($4 <= -1) print $0 }' > $1.nosegs.loss.cnvs
+cat $1.nosegs.merged.cnvs | awk '{ if ($4 >= 1 ) print $0 }' > $1.nosegs.gain.cnvs
+cat $1.justsegs.merged.cnvs | awk '{ if ($4 <= -1) print $0 }' > $1.justsegs.loss.cnvs
+cat $1.justsegs.merged.cnvs | awk '{ if ($4 >= 1 ) print $0 }' > $1.justsegs.gain.cnvs
+
+#the following are commented out since we no longer look at them, and we want to speed things up
+#cat $1.all.cnvs | intRemove ${SVN_BASE}/cnv/hg18/segDups > $1.nosegs.cnvs 
+#cat $1.all.cnvs $1.nosegs.cnvs | sort | uniq -u | sort -k1,1 -k2n,2  > $1.justsegs.cnvs 
+#merge_close_intervals $1.nosegs.cnvs 5  > $1.nosegs.merged.cnvs; 
+#merge_close_intervals $1.justsegs.cnvs 5  > $1.justsegs.merged.cnvs; 
+	#cat $1 | intSub ${SVN_BASE}/cnv/hg18/segDups > $1.nosegs2.cnvs
+	#merge_close_intervals $1.nosegs2.cnvs 5  > $1.nosegs2.merged.cnvs
+#cat $1.nosegs2.merged.cnvs | awk '{ if ($4 <= -1) print $0 }' > $1.nosegs2.loss.cnvs
+#cat $1.nosegs2.merged.cnvs | awk '{ if ($4 >= 1 ) print $0 }' > $1.nosegs2.gain.cnvs
+#cat $1 | awk '{ if ($4 <= -2) print $0 }' > $1.loss.big.cnvs
+#cat $1 | awk '{ if ($4 >= 2) print $0 }' > $1.gain.big.cnvs
+#cat $1.gain.cnvs  | awk '{ if (($3 - $2) < 5000) print $0 }' > $1.1k-5k.gain.cnvs
+#cat $1.loss.cnvs  | awk '{ if (($3 - $2) < 5000) print $0 }' > $1.1k-5k.loss.cnvs
+#cat $1.gain.cnvs  | awk '{ if ((($3 - $2) >= 5000) && (($3 - $2) < 10000)) print $0 }' > $1.5k-10k.gain.cnvs
+#cat $1.loss.cnvs  | awk '{ if ((($3 - $2) >= 5000) && (($3 - $2) < 10000)) print $0 }' > $1.5k-10k.loss.cnvs
+#cat $1.gain.cnvs  | awk '{ if (($3 - $2) >= 10000) print $0 }' > $1.10k+.gain.cnvs
+#cat $1.loss.cnvs  | awk '{ if (($3 - $2) >= 10000) print $0 }' > $1.10k+.loss.cnvs
+#cat $1 | awk '{ if (($4 <= -1) || ($4 >= 1)  ) print $0 }' > $1.int.cnvs

@@ -1,0 +1,137 @@
+#!/bin/sh
+IFS=$'\n'
+RUN=$1
+CONTIG=$2
+MODE=$3
+
+if [ "${CONTIG}" = "every" ]
+then
+	for line in `cat ${SVN_BASE}/cnv/chrom_list`
+	do
+		CONTIG=chr${line}
+		echo Doing ${CONTIG}...
+		$0 $RUN ${CONTIG} ${MODE}
+	done
+else
+	RESULTS_DIR=${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}
+
+	if [ "${MODE}" = "debut" ]
+	then
+		TRACKDIR=${RESULTS_DIR}/tracks
+		mkdir -p ${TRACKDIR}
+
+		NAME=${CONTIG}.cnvs.gain.cnvs
+		FULL=${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/val/${NAME}
+		cat ${FULL} | awk '{ print $2, $3, $4 }' | sort -n > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+		NAME=gsv_${CONTIG}
+		FULL=${SVN_BASE}/cnv/datasets/$NAME
+		cat ${FULL} | awk '{ print $2, $3, $4 }' | sort -n > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+		NAME=${CONTIG}.graphinfo
+		FULL=${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${NAME}
+		cat ${FULL} | grep NODE | awk '{ print $4, $4 + 1, "PART" }' | sort -n > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+		NAME=${CONTIG}.masks
+		FULL=${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${NAME}
+		cat ${FULL} | awk '{ print $2, $3, "MASK"; print $3, $2, "MASK" }'  | sort -k1n,1 > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+
+		NAME=${CONTIG}.dgs
+		FULL=${SVN_BASE}/cnv/results/${CONTIG}/working.${RUN}/${NAME}
+		cat ${FULL} | awk '{ print $3, $4, "USED" $4; print $4, $3, "USED" $4 }'  | sort -k1n,1 > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+
+		NAME=solb6.${CONTIG}.donedg.5.10M
+		FULL=${SVN_BASE}/cnv/solexaClusters/clusters3/${NAME}
+		cat ${FULL} | awk '{ print $2, $3, "MP" $4; print $3, $2, "MP" $4 }'  | sort -k1n,1 > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+		NAME=solb6.${CONTIG}.donedg.13.10M
+		FULL=${SVN_BASE}/cnv/solexaClusters/clusters3/${NAME}
+		cat ${FULL} | awk '{ print $2, $3, "MP" $4; print $3, $2, "MP" $4 }'  | sort -k1n,1 > ${TRACKDIR}/${NAME}.interval.tmp
+		formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+		#NAME=solb.donedg.10.100.100_${CONTIG}
+		#FULL=${SVN_BASE}/cnv/solexaClusters/clusters2/${NAME}
+		#cat ${FULL} | awk '{ print $2, $3, "MP" $4; print $3, $2, "MP" $4 }'  | sort -k1n,1 > ${TRACKDIR}/${NAME}.interval.tmp
+		#formatdata interval ${TRACKDIR}/${NAME}.interval.tmp ${TRACKDIR}/${NAME}.interval
+
+		MATEPAIRS_BOW5=${SVN_BASE}/cnv/solexaClusters/clusters2/solb.donedg.5_${CONTIG}
+		cat ${MATEPAIRS_BOW5} | awk '{ print $2, $3, "MP" $4; print $3, $2, "MP" $4  }' | sort -k1n,1 > ${TRACKDIR}/solb.donedg.5_${CONTIG}.interval.tmp
+		formatdata interval ${TRACKDIR}/solb.donedg.5_${CONTIG}.interval.tmp ${TRACKDIR}/solb.donedg.5_${CONTIG}.interval
+
+		MATEPAIRS_BOW5_10M=${SVN_BASE}/cnv/solexaClusters/clusters2/solb.donedg.5_${CONTIG}.10M
+		cat ${MATEPAIRS_BOW5} | awk '{ print $2, $3, "MP" $4; print $3, $2, "MP" $4  }' | sort -k1n,1 > ${TRACKDIR}/solb.donedg.5_${CONTIG}.10M.interval.tmp
+		formatdata interval ${TRACKDIR}/solb.donedg.5_${CONTIG}.10M.interval.tmp ${TRACKDIR}/solb.donedg.5_${CONTIG}.10M.interval
+
+		MATEPAIRS_WASH=${SVN_BASE}/cnv/solexaClusters/sol.donedg.3_${CONTIG}
+		cat ${MATEPAIRS_WASH} | awk '{ print $2, $3, "MP" $4; print $3, $2, "MP" $4  }' | sort -k1n,1 > ${TRACKDIR}/sol.donedg.3_${CONTIG}.interval.tmp
+		formatdata interval ${TRACKDIR}/sol.donedg.3_${CONTIG}.interval.tmp ${TRACKDIR}/sol.donedg.3_${CONTIG}.interval
+
+		OURCALLS=${RESULTS_DIR}/val/${CONTIG}.cnvs.merged.cnvs
+		cat $OURCALLS | awk '{ print $2, $3, $4 }' > ${TRACKDIR}/${CONTIG}.cnvs.merged.cnvs.interval.tmp
+		formatdata interval ${TRACKDIR}/${CONTIG}.cnvs.merged.cnvs.interval.tmp ${TRACKDIR}/${CONTIG}.cnvs.merged.cnvs.interval
+
+		YOONCALLS=${SVN_BASE}/cnv/datasets/yoon_all
+		cat $YOONCALLS | awk '{ print $2, $3, $4"_"$5 }' > ${TRACKDIR}/yoon_all.interval.tmp
+		formatdata interval ${TRACKDIR}/yoon_all.interval.tmp ${TRACKDIR}/yoon_all.interval
+
+		CONTIGBREAKS=${SVN_BASE}/cnv/hg18/contigbreaks/${CONTIG}.contigbreaks
+		cat $CONTIGBREAKS | awk '{ print $2, $3, "CB" }' > ${TRACKDIR}/${CONTIG}.contigbreaks.interval.tmp
+		formatdata interval ${TRACKDIR}/${CONTIG}.contigbreaks.interval.tmp ${TRACKDIR}/${CONTIG}.contigbreaks.interval
+
+		REPEATREGIONS=${SVN_BASE}/cnv/hg18/repeat_regions/${CONTIG}.repeat_regions
+		cat ${REPEATREGIONS} | awk '{ print $2, $3, "REP" }' > ${TRACKDIR}/${CONTIG}.repeat_regions.interval.tmp
+		formatdata interval ${TRACKDIR}/${CONTIG}.repeat_regions.interval.tmp ${TRACKDIR}/${CONTIG}.repeat_regions.interval
+
+		KIDDCALLS=${SVN_BASE}/cnv/datasets/kidd_loss_${CONTIG}
+		cat ${KIDDCALLS} | awk '{ print $2, $3, "-1_kidd" }' > ${TRACKDIR}/kidd_loss_${CONTIG}.interval.tmp
+		formatdata interval ${TRACKDIR}/kidd_loss_${CONTIG}.interval.tmp ${TRACKDIR}/kidd_loss_${CONTIG}.interval
+
+
+		ln -s /data/cnv/coverage_maps/solexa_bowtie_600/${CONTIG}.scov.continuous ${TRACKDIR}/${CONTIG}.scov.continuous
+
+
+	else
+		OUTFILE=${RESULTS_DIR}/${CONTIG}.track
+
+		#Used Donor Edges
+		echo "track name=usedDG_"${CONTIG}" visibility=pack" > ${OUTFILE}
+		cat ${RESULTS_DIR}/${CONTIG}.dgs | awk '{ print $2, $3, $4,  "cnt_" $6 "_or_" $5 }' >> ${OUTFILE}
+
+		#Original cnv calls, prior to merging
+		echo >> ${OUTFILE}
+		echo "track name=cnvs."${CONTIG} " visibility=pack" >> ${OUTFILE}
+		cat ${RESULTS_DIR}/${CONTIG}.cnvs >> ${OUTFILE}
+
+		#cnv calls after merging
+		echo >> ${OUTFILE}
+		echo "track name=cnvs.merged."${CONTIG} " visibility=squish" >> ${OUTFILE}
+		cat ${RESULTS_DIR}/val/${CONTIG}.cnvs.merged.cnvs >> ${OUTFILE}
+
+
+		#all donor edges
+		echo >> ${OUTFILE}
+		echo "track name=allDG_"${CONTIG} " visibility=hide" >> ${OUTFILE} 
+		#echo "track name=allDG_"${CONTIG} " useScore=1 visibility=hide" >> ${OUTFILE} 
+		cat /home/share/pashadag/newjcv/solexa/sol.donedg.${CONTIG} |  awk '{  print $1"\t"$2"\t"$3"\t"$4"\t" $5*100"\t+" }' >> ${OUTFILE}
+		#awk '{  print $1"\t"$2"\t"$3"\t"$4"\t" $5*100"\t+\t"$2 + $6"\t"$3 - $7 }' 
+
+		#kidds validated deletion
+		echo >> ${OUTFILE}
+		echo "track name=kidd_loss visibility=pack" >> ${OUTFILE}
+		cat ${SVN_BASE}/cnv/datasets/kidd_loss_all >> ${OUTFILE}
+
+		#kidd ins abc8
+		echo >> ${OUTFILE}
+		echo "track name=kidd_ins_abc8_all visibility=squish" >> ${OUTFILE}
+		cat ${SVN_BASE}/cnv/datasets/kidd_ins_abc8_all >> ${OUTFILE}
+	fi
+
+fi

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+if test $# -ne 1 
+then
+	echo "usage: plot_length_distribution <interval_file>"
+	exit
+fi
+
+echo "calling matlab function... (force quit if hangs)"
+#echo /opt/matlab/bin/matlab -nosplash -nodisplay -nodesktop -r "plot_length_distribution('$1')"
+# /opt/matlab/bin/matlab -nosplash -nodisplay -nodesktop -r "plot_length_distribution('$1')"
+# matlab -nosplash -nodisplay -nodesktop -r "plot_length_distribution('$1')"
+echo matlab  -nodisplay -r "plot_length_distribution('$1')"
+matlab -nodisplay -r "plot_length_distribution('$1')"
+echo "done"

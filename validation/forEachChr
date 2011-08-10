@@ -1,0 +1,5 @@
+#!/bin/sh
+IFS=$'\n'
+echo this is just a readme basically
+
+a=6; while [ $a -le 22 ]; do command; a=`expr $a + 1`; done

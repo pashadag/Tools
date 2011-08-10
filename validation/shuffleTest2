@@ -1,0 +1,80 @@
+#!/bin/sh
+IFS=$'\n'
+CALL_FILE=$1
+VAL_LOSS_FILE=$2
+VAL_GAIN_FILE=$3
+VAL_ALL_FILE=$4
+NUM_TRIALS=$5
+STAGE=$6
+
+JOINT=`basename ${CALL_FILE}`-`basename ${VAL_ALL_FILE}`-shuf
+
+
+both_list=""
+missed_list=""
+loss_only_list=""
+gain_only_list=""
+
+
+if [ "$STAGE" = "1" ]; then
+	echo Doing stage 1...
+
+	for ((i=1; i <= NUM_TRIALS ; i++))  
+	do
+		python ${SVN_BASE}/cnv/validation/shuffle_predictions.py ${CALL_FILE} | sort -k1,1 -k2n,2 > ${JOINT}.shuf.$i &
+	done
+	wait
+
+	rm -rf shufjobs
+	for ((i=1; i <= NUM_TRIALS ; i++))  
+	do
+		echo "python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.shuf.$i ${VAL_ALL_FILE} $JOINT.a.$i  > ${JOINT}.outa$i" >> shufjobs
+		echo "python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.shuf.$i ${VAL_LOSS_FILE} $JOINT.l.$i > ${JOINT}.outl$i" >> shufjobs
+		echo "python ${SVN_BASE}/cnv/validation/general_validation.py ${JOINT}.shuf.$i ${VAL_GAIN_FILE} $JOINT.g.$i > ${JOINT}.outg$i" >> shufjobs
+	done
+
+	cat shufjobs | xatatime 6 | sh
+	exit #you have to wait for these to finish, and then restart the script below
+
+else 
+
+	echo Doing stage 2...
+	for ((i=1; i <= NUM_TRIALS ; i++))  
+	do
+
+		total=`grep -h "#" ${JOINT}.outa$i | tail -1 | awk '{ print $2 }'`
+		some=`grep -h "#" ${JOINT}.outa$i | tail -1 | awk '{ print $3 }'`
+		loss=`grep -h "#" ${JOINT}.outl$i | tail -1 | awk '{ print $3 }'`
+		gain=`grep -h "#" ${JOINT}.outg$i | tail -1 | awk '{ print $3 }'`
+		echo "$total $some $loss $gain"
+
+
+		missed=`echo $total - $some | bc`
+		both=`echo $loss + $gain - $some | bc`
+		loss_only=`echo $loss - $both | bc`
+		gain_only=`echo $gain - $both | bc`
+
+		missed_list=`echo $missed_list $missed`
+		both_list=`echo $both_list $both`
+		loss_only_list=`echo $loss_only_list $loss_only`
+		gain_only_list=`echo $gain_only_list $gain_only`
+	done
+
+	if [ "$NUM_TRIALS" -ne "0" ]; then
+		echo b 
+		missed_mean=`echo $missed_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+		missed_sd=`echo $missed_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+		both_mean=`echo $both_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+		both_sd=`echo $both_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+		loss_only_mean=`echo $loss_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+		loss_only_sd=`echo $loss_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+		gain_only_mean=`echo $gain_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $1 }'`
+		gain_only_sd=`echo $gain_only_list | ${SVN_BASE}/cnv/tools/getMeanSD | awk '{ print $2 }'`
+
+		echo "# missed_mean both_mean loss_only_mean gain_only_mean missed_sd both_sd loss_only_sd gain_only_sd"
+		printf "#\t${missed_mean}\t${both_mean}\t${loss_only_mean}\t${gain_only_mean}\t${missed_sd}\t${both_sd}\t${loss_only_sd}\t${gain_only_sd}\n"
+	fi
+	exit
+fi
+
+
