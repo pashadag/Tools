@@ -40,6 +40,12 @@ int main(int argc, char * argv[]) {
 	cerr << "Read in " << badInts.size() << " forbidden intervals.\n";
 	vector<interval>::iterator res;
 
+	if (badInts.size() == 0) {
+		cout << sbuf << endl;
+		continue;
+	}
+
+
 	while (getline(cin, sbuf)){ 
 		istringstream line(sbuf);
 		interval curInt;

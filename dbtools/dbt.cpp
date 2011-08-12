@@ -241,6 +241,34 @@ void maskLines(int col) {
 
 }
 
+void splitBlocks(int col) {
+	if (col == 0) {
+		cerr << "Column has to be 1-based.\n";
+		exit(1);
+	}
+	if (col != -1) col--; //input is given as 1-based
+	string curStr, prevStr;
+	vector<string> curRow;
+	vector<string> prevRow;
+	while (get_row_whitespace(cin, curRow, curStr)) {
+		if (col != -1) {
+			if (curRow.size() <= col  || prevRow.size() <= col || curRow[col] == prevRow[col]) { 
+				cout << curStr << endl;
+			} else {
+				cout << endl << curStr << endl;
+			}
+		} else {
+			if (prevStr == "" || curStr == "" || prevStr == curStr) {
+				cout << curStr << endl;
+			} else {
+				cout << endl << curStr << endl;
+			}
+		}
+		prevRow = curRow;
+		prevStr = curStr;
+	}
+}
+
 void calcnstat(int nval) { //n50 or whatever
 	string sbuf;
 	vector<long> nums;
@@ -288,6 +316,10 @@ void usage(int argc, char * argv[]) {
 	cerr << endl;
 	cerr << "Usage: " << argv[0] << " n50 {-n val}" << endl;
 	cerr << "\tThis program takes raw contigs in, and calculates the n50 score.  If val is specified, then the n\"val\" is calculate (n90, for example).\n";
+	cerr << endl;
+	cerr << "Usage: " << argv[0] << " block {-l column}" << endl;
+	cerr << "\tThis program takes raw space delim files in, and whenever the text in the column between consecutive lines differs, a newline is inserted.\n";
+	cerr << "\tIf column is not specified, then the whole lines are compared\n";
 	exit(1);
 }
 
@@ -379,6 +411,8 @@ int main(int argc, char * argv[]) {
 		rcFile(inputMode, column);
 	} else if (task == "mask") {
 		maskLines(column);
+	} else if (task == "block") {
+		splitBlocks(column);
 	} else if (task == "cov") {  //not tested
 		if (genome == ""  || base == "") { //should be one other parameter
 			cerr << "Invalid parameters.\n";
