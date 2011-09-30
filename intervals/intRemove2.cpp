@@ -40,11 +40,6 @@ int main(int argc, char * argv[]) {
 	cerr << "Read in " << badInts.size() << " forbidden intervals.\n";
 	vector<interval>::iterator res;
 
-	if (badInts.size() == 0) {
-		cout << sbuf << endl;
-		continue;
-	}
-
 
 	while (getline(cin, sbuf)){ 
 		istringstream line(sbuf);
@@ -53,6 +48,11 @@ int main(int argc, char * argv[]) {
 	
 		//cout << "left: " << leftInt << "right: " << rightInt << flush << endl;
 		
+		if (badInts.size() == 0) {
+			cout << sbuf << endl;
+			continue;
+		}
+
 		res = lower_bound(badInts.begin(), badInts.end(), curInt, comp_le);
 
 		if (res != badInts.end() && !res->overlaps(curInt)) {

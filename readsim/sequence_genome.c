@@ -14,14 +14,14 @@
 #include <time.h>
 
 void usage(char ** argv) {
-	printf("usage: %s <reference_genome> <coverage> <readlen> <mu_insert> <stdev_insert> <error rate> <reads_out_file> <locs_out_file> <technology(0=abi, 1=solexa)>\n",argv[0]);
+	printf("usage: %s <reference_genome> <coverage> <readlen> <mu_insert> <stdev_insert> <error rate> <reads_out_file> <locs_out_file> <technology(0=abi, 1=solexa)> <prefix>\n",argv[0]);
 }
 
 /*
  * CONSTANTS
  */
 
-#define EXPECTED_ARGS 9 	// expected number of input arguments
+#define EXPECTED_ARGS 10 	// expected number of input arguments
 
 int main(int argc, char ** argv) {
 
@@ -48,6 +48,9 @@ int main(int argc, char ** argv) {
 	strcpy(locoutfilename,argv[8]);
 
 	int technology = atoi(argv[9]);
+
+	nameprefix = (char *)malloc(sizeof(char)*(strlen(argv[10])+1));
+	strcpy(nameprefix, argv[10]);
 
 	int coverage; if ((coverage = atoi(argv[2])) == 0) {
 		fprintf(stderr,"error: parsing integral coverage from %s\n",argv[2]);
@@ -93,6 +96,7 @@ int main(int argc, char ** argv) {
 	fprintf(report, "  Read Output file: %s\n", outfilename);
 	fprintf(report, "  Location Output file: %s\n", locoutfilename);
 	fprintf(report, "  Technology = %i (0=abi, 1=solexa)\n", technology);
+	fprintf(report, "  Name prefix = %s\n", nameprefix);
 
 	fprintf(report, "\n");
 
@@ -103,7 +107,6 @@ int main(int argc, char ** argv) {
 	int i; for (i = 0; i < readlen; i++) allns[i]='N'; //initialize allns
 	allns[i]='\0';  
 
-	char prefix[] = "SIM";
 	char templateid[20];
 	int allnsCounter = 0;
 
@@ -115,7 +118,7 @@ int main(int argc, char ** argv) {
 
 		templateid[0] = '\0';
 		int width = ceil (log(num_matepairs) / log(10.0)) ;
-		sprintf(templateid,"%s_%.*d",prefix,width,i);
+		sprintf(templateid,"%.*d",width,i);
 
 		Matepair * m = generateMatepairWithErrors(f->genome, templateid, readlen, mu, stdev, errrate,technology);
 
@@ -124,12 +127,16 @@ int main(int argc, char ** argv) {
 					
 		if (strcmp(m->forward->sequence, allns) != 0) {
 			printRead(m->forward,outf);
-			fprintf(locoutf, "%s\t%d\t%c\t%d\t%s\n", m->forward->id, m->forward->hits[0]->start, m->forward->hits[0]->strand, d, m->forward->hits[0]->errors); 
+			char name[40];
+			getReadName(m->forward, name);
+			fprintf(locoutf, "%s\t%d\t%s\n", name, d, m->forward->hits[0]->errors); 
 		} else allnsCounter++;
 
 		if (strcmp(m->reverse->sequence, allns) != 0) {
 			printRead(m->reverse,outf);
-			fprintf(locoutf, "%s\t%d\t%c\t%d\t%s\n", m->reverse->id, m->reverse->hits[0]->start, m->reverse->hits[0]->strand, d, m->reverse->hits[0]->errors); 
+			char name[40];
+			getReadName(m->reverse, name);
+			fprintf(locoutf, "%s\t%d\t%s\n", name, d, m->forward->hits[0]->errors); 
 		} else allnsCounter++;
 
 		destructMatepair(m);

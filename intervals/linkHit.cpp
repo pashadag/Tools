@@ -23,9 +23,18 @@ string sbuf;
 //	2) command line target interval, either one of them or two of them
 //The output is the set of links from 1 that fall with some endpoint into the target (for the case of one target)
 // or fall with one endpoint into one target and with the other into the other target (for two targets).
+void usage(int argc, char * argv[]) {
+	cerr << "Usage: " << argv[0] << " chr start end [chr start end]\n";
+	cerr << "This program takes a set of links in stdin.\n";
+	cerr << "The output is the set of links from 1 that fall with some endpoint into the target (for the case of one target) ";
+	cerr << "or fall with one endpoint into one target and with the other into the other target (for two targets).\n";
+
+	exit(1);
+}
+
 
 int main(int argc, char * argv[]) {
-	assert ((argc==4) || (argc == 7));
+	if (argc != 4 && argc != 7) usage(argc, argv);
 
 	bool twoTargets=false;
 	interval target, target2;
@@ -53,7 +62,7 @@ int main(int argc, char * argv[]) {
 			}
 		} else {
 			if ((target.contains(chr, point1) && target2.contains(chr, point2)) || 
-				(target.contains(chr, point2) && target2.contains(chr, point1))){
+					(target.contains(chr, point2) && target2.contains(chr, point1))){
 				cout << sbuf << endl;
 			}
 		}

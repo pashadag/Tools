@@ -62,17 +62,20 @@ Read * generateRead(Genome * g, int read_len, char * templateid, char direction,
 	r->hits = (Hit **)malloc(sizeof(Hit *));
 	r->hits[0] = h;
 
+	sprintf(r->id,"%s",templateid);
+	/*
 	if (technology == 0) {
 		sprintf(r->id,"%s_%c3",templateid,direction);
 	} else if (technology == 1) {
 		char c = (direction == 'F') ? '1' : '2';
 		sprintf(r->id,"%s/%c",templateid,c);
+		//sprintf(r->id,"%s_%d_%c_%d/%c", templateid, r->hits[0]->start, r->hits[0]->strand, r->hits[0]->numErrors, c);
 	} else {
 		fprintf(stderr, "Internal error: technology = %i.\n", technology);
 		exit(1);
 	}
+	*/
 
-	//sprintf(r->id,"%s_%c3 LOC_%d",templateid,direction,start);
 
 	// return the read
 	return r;
@@ -169,7 +172,11 @@ Matepair * generateMatepair(Genome * g, char * templateId, int read_len, double 
 			f = (Read *)malloc(sizeof(Read));
 			f->direction = 'F';
 
-			if (technology == 0) {
+			sprintf(f->id,"%s",m->templateid);
+			 if (technology == 1) { 
+				 if (strand == '+') strand = '-'; else strand = '+'; //change strand for solexa
+			 }
+			/*if (technology == 0) {
 				sprintf(f->id,"%s_%c3",m->templateid,f->direction);
 			} else if (technology == 1) {
 				sprintf(f->id,"%s/1",m->templateid);
@@ -178,6 +185,7 @@ Matepair * generateMatepair(Genome * g, char * templateId, int read_len, double 
 				fprintf(stderr, "Internal error: technology = %i.\n", technology);
 				exit(1);
 			}
+			*/
 
 			f->sequence = str(read_len);
 			f->quality = 1.0;
@@ -208,9 +216,22 @@ Matepair * generateMatepair(Genome * g, char * templateId, int read_len, double 
 	return m;
 }
 
-void printRead(Read * r, FILE * fp) { 
-	fprintf(fp, ">%s\t%d\t%c\t%d\t%s\n%s\n", r->id, r->hits[0]->start, r->hits[0]->strand, r->hits[0]->numErrors, r->hits[0]->errors, r->sequence); 
+void getReadName(Read * r, char * name) {
+	if (technology == 0) {
+		sprintf(name, ">%s_%s_%d_%c_%d_%c3", nameprefix, r->id, r->hits[0]->start, r->hits[0]->strand, r->hits[0]->numErrors, r->direction);
+	} else if (technology == 1) {
+		char c = (r->direction == 'F') ? '1' : '2';
+		sprintf(name, ">%s_%s_%d_%c_%d/%c", nameprefix, r->id, r->hits[0]->start, r->hits[0]->strand, r->hits[0]->numErrors, c);
+	} else {
+		fprintf(stderr, "Internal error: technology = %i.\n", technology);
+		exit(1);
+	}
+}
 
+void printRead(Read * r, FILE * fp) { 
+	char name[40];
+	getReadName(r, name);
+	fprintf(fp, "%s\n%s\n", name, r->sequence);
 }
 
 void destructRead(Read * r) {

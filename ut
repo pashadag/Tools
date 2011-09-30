@@ -4,7 +4,7 @@ num=`ls -d -1 ut* | sort -n | tail -1 | tr 'ut' ' ' | awk '{ print $1 +1 }'`
 rm -Rf ut0
 mkdir ut$num
 cd ut$num
-cp ~/tools/unittest/* .
+cp ~/Tools/unittest/* .
 screen 
 screen 
 cd ..

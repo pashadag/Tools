@@ -41,7 +41,7 @@ struct matepair {
 };
 
 typedef struct matepair Matepair;
-
+char * nameprefix;
 
 void revcomp(char * s, int slen);
 Read * generateRead(Genome * g, int read_len, char * templateid, char direction, char strand);
@@ -51,6 +51,7 @@ Matepair * generateMatepair(Genome * g, char * templateId, int read_len, double 
 Matepair * generateMatepairWithErrors(Genome * g, char * templateId, int read_len, double mu_insert_size, double stdev_insert_size, double subrate, int tech);
 
 void printRead(Read * r, FILE * fp);
+void getReadName(Read * r, char * name);
 void readToProbcalc(Read * r, FILE *fp);
 
 void destructMatepair(Matepair * m);
