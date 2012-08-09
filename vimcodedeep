@@ -1,2 +1,2 @@
 #!/bin/sh
-eval 'vim `ls -1 *.cpp *.c *.pl *.py *.h *.sh makefile project_files */*.cpp */*.c */*.pl */*.h */*.sh */makefile`'
+eval 'vim `ls -1 *.cpp *.c *.pl *.py *.h *.sh *.R makefile project_files */*.cpp */*.c */*.pl */*.h */*.sh */*.R */makefile`'

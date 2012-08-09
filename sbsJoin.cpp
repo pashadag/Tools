@@ -36,20 +36,29 @@ string filename, baseFilename;
 //c 3
 
 void usage(char * argv[]) {
-	cerr << "Usage: " << argv[0] << " file1 file2 <delimiter>." << endl;
+	cerr << "Usage: " << argv[0] << " file1 file2 <delimiter>. \n\tfile1 may be - to indicate stdin" << endl;
 	exit(1);
 }
 
 int main(int argc, char * argv[]) {
 	if ((argc != 1+2) && (argc != 1+3)) usage(argv);
-	ifstream file1(argv[1]);
+
+	istream * file1;
+	ifstream realFile1;
+	if (strcmp(argv[1], "-") == 0) {
+		file1 = &cin;
+	} else {
+		realFile1.open(argv[1]);
+		file1 = &realFile1;
+	}
+
 	ifstream file2(argv[2]);
 	string delim;
 	if (argc == 4) delim = argv[3]; else delim = " ";
 
 	string line1, line2;
 	//if (!getline(file1, curLine)) {cerr << "empty file" << endl; exit(1);}
-	while (getline(file1, line1)) {
+	while (getline(*file1, line1)) {
 		if (getline(file2, line2)) {
 			cout << line1 << delim <<  line2 << endl;
 		} else {
@@ -60,6 +69,7 @@ int main(int argc, char * argv[]) {
 		cout << delim << line2 << endl;
 	}
 
+	if (realFile1.is_open()) realFile1.close();
 	return 0;
 }
 

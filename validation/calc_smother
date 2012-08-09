@@ -2,6 +2,6 @@
 FILE=${1}
 CONTIG=${2}
 len=`cat ${FILE} | sort -k1,1 -k2n,2 | intJoin | awk -v sum=0 '{ sum = sum + ($3 - $2); print sum; }' | tail -1`
-chrlen=`cat ${SVN_BASE}/cnv/chrom_length | grep ${CONTIG}" " | awk '{ print $2 }'`
+chrlen=`cat ~/Tools/validation/chrom_length | grep ${CONTIG}" " | awk '{ print $2 }'`
 result=`echo "scale=4; $len/$chrlen" | bc`
 echo "# " $result $len $chrlen

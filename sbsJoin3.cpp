@@ -20,7 +20,7 @@ string sbuf;
 string filename, baseFilename;
 
 
-//This program takes standard in as the input, and joins every consecutive pair of lines (with no space)
+//This program takes standard in as the input, and joins every consecutive pair of lines (with tab)
 //
 //So, the file
 //a
@@ -44,7 +44,7 @@ int main(int argc, char * argv[]) {
 
 	int numlines = 2;
 	int skip = 0;
-	string delim= "";
+	string delim= "\t";
 
 	if (argc > 4) usage(argc, argv);
 	if (argc >= 2) {
