@@ -281,6 +281,13 @@ char revcomp (char s) {
 	return 'X';
 }
 
+string rev (string s) {
+	string rc;
+	for (int i = s.length() - 1; i >= 0; i--) rc+=s[i];
+	return rc;
+}
+
+
 string revcomp (string s) {
 	string rc;
 	for (int i = s.length() - 1; i >= 0; i--) rc+=revcomp(s[i]);
