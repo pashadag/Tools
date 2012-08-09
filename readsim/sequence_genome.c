@@ -33,7 +33,7 @@ int main(int argc, char ** argv) {
 
 	srand( time(NULL) );
 
-	FILE * outf; FILE * locoutf; FILE * report = stdout;
+	FILE * outf; FILE * locoutf; FILE * report = stderr;
 
 	fprintf(report, "\nSequence a Genome v1.0\n");
 	fprintf(report, "----------------------\n\n");
@@ -52,8 +52,8 @@ int main(int argc, char ** argv) {
 	nameprefix = (char *)malloc(sizeof(char)*(strlen(argv[10])+1));
 	strcpy(nameprefix, argv[10]);
 
-	int coverage; if ((coverage = atoi(argv[2])) == 0) {
-		fprintf(stderr,"error: parsing integral coverage from %s\n",argv[2]);
+	double coverage; if ((coverage = atof(argv[2])) == 0) {
+		fprintf(stderr,"error: parsing coverage from %s\n",argv[2]);
 	}
 
 	int readlen; if ((readlen = atoi(argv[3])) == 0) {
@@ -61,15 +61,15 @@ int main(int argc, char ** argv) {
 	}
 
 	double mu; if ((mu = atof(argv[4])) == 0) {
-		fprintf(stdout,"warning: float mu from %s is either 0 or cannot parse\n",argv[4]);
+		fprintf(stderr,"warning: float mu from %s is either 0 or cannot parse\n",argv[4]);
 	}
 
 	double stdev; if ((stdev = atof(argv[5])) == 0) {
-		fprintf(stdout,"warning: float stdev from %s is either 0 or cannot parse\n",argv[5]);
+		fprintf(stderr,"warning: float stdev from %s is either 0 or cannot parse\n",argv[5]);
 	}
 
 	double errrate; if ((errrate = atof(argv[6])) == 0) {
-		fprintf(stdout,"warning: float error rate from %s is either 0 or cannot parse\n",argv[6]);
+		fprintf(stderr,"warning: float error rate from %s is either 0 or cannot parse\n",argv[6]);
 	}
 	if ((errrate < 0) || (errrate > 1)) {
 		fprintf(stderr, "error: errrate must be between 0 and 1.\n");
@@ -89,7 +89,7 @@ int main(int argc, char ** argv) {
 	int num_matepairs = ceil(coverage*( ((double) f->genome->size) / readlen )/2);
 
 	fprintf(report, "  Genome size: %d\n", f->genome->size);
-	fprintf(report, "  Desired coverage: %dx (matepairs %d)\n", coverage, num_matepairs);
+	fprintf(report, "  Desired coverage: %fx (matepairs %d)\n", coverage, num_matepairs);
 	fprintf(report, "  Read lengths: %d\n", readlen);
 	fprintf(report, "  Substitution rate: %f\n", errrate);
 	fprintf(report, "  Insert average size: %f standard deviation: %f\n", mu, stdev);

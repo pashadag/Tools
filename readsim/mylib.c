@@ -308,7 +308,9 @@ char * strFrom(char * s) {
  */
 FILE * efopen(const char * fn, const char * mode) {
 	FILE * f;
-	if ( (f = fopen(fn,mode)) == NULL ) {
+	if (strcmp(fn, "-") == 0) {
+		f = stdout;
+	} else if ( (f = fopen(fn,mode)) == NULL ) {
 		fprintf(stderr,"error: opening file %s\n",fn);
 		exit(1);
 	}
@@ -319,7 +321,7 @@ FILE * efopen(const char * fn, const char * mode) {
  * close a file with error checking
  */
 void efclose(FILE * f) {
-	if (fclose(f) != 0) {
+	if ((f != stdout) && (fclose(f) != 0)) {
 		fprintf(stderr,"warning: could not close file\n");
 	}
 }
