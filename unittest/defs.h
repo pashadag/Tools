@@ -19,6 +19,44 @@
 
 using namespace std;
 
+class MeanSD {
+	public:
+		double M2;
+		double mean;
+		double numpoints;
+		MeanSD() {
+			reset();
+		}
+
+		void reset() {
+			M2 = 0;
+			mean = 0;
+			numpoints = 0;
+		}
+		void addVal(double cur_val) {
+			numpoints++;
+			double delta = cur_val - mean;
+			mean += delta / numpoints;
+			M2 += delta *( cur_val - mean);
+			return;
+		}
+		double getMean() {
+			return mean;
+		}
+		double getSD() {
+			return sqrt (M2 / (numpoints - 1));
+		}
+
+
+};
+
+
+template<class T>
+string make_string(const T & s) {
+	ostringstream o;
+	o << s;
+	return o.str();
+}
 
 template<class T, class U>
 ostream & operator << (ostream &out, const map<T,U> & m) {
@@ -27,6 +65,18 @@ ostream & operator << (ostream &out, const map<T,U> & m) {
 		out << it->first << " -> " << it->second << endl;
 	}
 	return out;
+}
+
+//print a sparce vector of vectors (only positions with "goodVal" are printed)
+template<class T>
+string print_sparce(const vector<vector<T > > & v, T goodVal){
+	string retval = "";
+	for (int i = 0; i < v.size(); i++) {
+		for (int j = 0; j < v[i].size(); j++) {
+			if (v[i][j] == goodVal) retval += make_string(i) + " " + make_string(j) + ", ";
+		} 
+	}
+	return retval;
 }
 
 //print vector of vectors
@@ -59,7 +109,7 @@ istream & operator >> (istream & in, vector<vector<T > > & v) {
 //print vector of T
 template<class T>
 ostream & operator << (ostream & out, const vector<T> & v) {
-	out << v.size() << '\t';
+	//out << v.size() << '\t';
 	if (v.size() != 0) {
 		out << v[0];
 		for (int i = 1; i < v.size(); i++) out << '\t' << v[i];
@@ -123,6 +173,14 @@ void open_file(ofstream & file, string filename) {
 	}
 }
 
+void open_file_binary(ofstream & file, string filename) {
+	file.open(filename.c_str(), ios::out | ios::binary);
+	if (!file) {
+		cerr <<  "Cannot open input file: " <<  filename  << endl;
+		assert(0);
+		exit(1);
+	}
+}
 string read_genome(string filename) {
 	string genome;
 	ifstream inFile;
@@ -141,6 +199,25 @@ string read_genome(string filename) {
 	inFile.close();
 	return genome;
 }
+
+/*
+//assumes each line is a separate contig
+string read_pseudo_genome(istream inFile) {
+string genome;
+
+//read the file into genome
+char c;
+while ((c = inFile.rdbuf()->sbumpc()) != EOF) {
+if (c != '\n') {
+genome.push_back(c);
+} else {
+genome.push_back('$');
+}
+}
+return genome;
+}
+ */
+
 
 
 template<class T>
@@ -197,6 +274,159 @@ bool get_row(istream & inFile, vector<string> & row, char delim = '\t') {  //rea
 	}
 	return true;
 }
+
+bool get_row_whitespace (istream & inFile, vector<string> & row ) {  //read a tab delimited line from file
+	string line, s;
+	row.clear();
+	getline(inFile, line);
+	if (inFile.eof()) return false;
+	istringstream lineStream(line);
+
+	while (lineStream >> s) {
+		row.push_back(s);
+	}
+	return true;
+}
+
+bool get_row_whitespace (istream & inFile, vector<string> & row, string & strLine ) {  //read a tab delimited line from file
+	string s;
+	row.clear();
+	getline(inFile, strLine);
+	if (inFile.eof()) return false;
+	istringstream lineStream(strLine);
+
+	while (lineStream >> s) {
+		row.push_back(s);
+	}
+	return true;
+}
+
+char revcomp (char s) {
+	if (s == 'A') return 'T';
+	else if (s == 'C') return 'G';
+	else if (s == 'G') return 'C';
+	else if (s == 'T') return 'A';
+	else if (s == 'a') return 't';
+	else if (s == 'c') return 'g';
+	else if (s == 'g') return 'c';
+	else if (s == 't') return 'a';
+	return 'X';
+}
+
+string rev (string s) {
+	string rc;
+	for (int i = s.length() - 1; i >= 0; i--) rc+=s[i];
+	return rc;
+}
+
+
+string revcomp (string s) {
+	string rc;
+	for (int i = s.length() - 1; i >= 0; i--) rc+=revcomp(s[i]);
+	return rc;
+}
+
+string rcnorm (string &s) {
+	string rc;
+	for (int i = 0; i < s.length(); i++) {
+		char c = revcomp(s[s.length() - 1 - i]); 
+		if (s[i] < c) {
+			return s;
+		} else if (s[i] > c) {
+			return revcomp(s);
+		}
+	}
+	return revcomp(s);
+}
+
+string rcnorm (string &s, bool & flipped) {
+	string rc;
+	for (int i = 0; i < s.length(); i++) {
+		char c = revcomp(s[s.length() - 1 - i]); 
+		if (s[i] < c) {
+			flipped = false;
+			return s;
+		} else if (s[i] > c) {
+			flipped = true;
+			return revcomp(s);
+		}
+	}
+	return revcomp(s);
+}
+enum HAMDIST_OPTS  {SAME_STRAND, DIFF_STRAND, ANY_STRAND};
+
+int hamdist(const string & x, const string & y, HAMDIST_OPTS mode, int maxAllowed = -1) {
+	if (mode == ANY_STRAND) {
+		string rcy = revcomp(y);
+		return min(hamdist(x,y, SAME_STRAND), hamdist(x,rcy,SAME_STRAND));
+	} else if (mode == DIFF_STRAND) {
+		string rcy = revcomp(y);
+		return hamdist(x,rcy,SAME_STRAND);
+	}
+	assert (mode == SAME_STRAND);
+	assert (x.length() == y.length());
+	int dist = 0;
+	if (maxAllowed == -1) maxAllowed = x.length();
+	for (int i = 0; i < x.length(); i++) {
+		if (x[i] != y[i]) {
+			dist++;
+			if (dist > maxAllowed) return dist;
+		}
+	}
+	return dist;
+}
+
+int hamdist(string & x, string & y, HAMDIST_OPTS mode, bool &flipped) {
+	assert (mode == ANY_STRAND);
+	int dist, dist2;
+	dist = hamdist(x,y, SAME_STRAND);
+	dist2 = hamdist(x,y,DIFF_STRAND);
+	if (dist2 < dist) {
+		flipped = true;
+		return dist2;
+	}
+	flipped = false;
+	return dist;
+
+}
+
+void maskStrings(vector<string> & strings) {
+	int minLen = 10000000;
+	for (int i = 0; i < strings.size(); i++)  {
+		if (strings[i].length() < minLen) minLen = strings[i].length();
+	}
+	for (int j = 0; j < minLen; j++) {
+		bool same = true;;
+		char lastchar = strings[0].at(j);
+		for (int i = 1; i < strings.size(); i++) {
+			if (strings[i].at(j) != lastchar) {
+				same = false;
+				break;
+			}
+		}
+		if (same) {
+			for (int i = 0; i < strings.size(); i++) {
+				strings[i].at(j) = '-';
+			}
+		}
+	}
+}
+
+
+
+string add_commas(int num) {
+	string s, retval;
+	s = make_string(num);
+	for (int i = 0; i < s.length(); i++) {
+		retval.push_back(s.at(i));
+		int j = s.length() - 1 - i;
+		if (((j % 3) == 0) && (j != 0)) {
+			retval.push_back(',');
+		}
+	}
+	return retval;
+}
+
 #endif
 
 

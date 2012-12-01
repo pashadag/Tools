@@ -19,6 +19,38 @@
 
 using namespace std;
 
+class MeanSD {
+	public:
+		double M2;
+		double mean;
+		double numpoints;
+		MeanSD() {
+			reset();
+		}
+
+		void reset() {
+			M2 = 0;
+			mean = 0;
+			numpoints = 0;
+		}
+		void addVal(double cur_val) {
+			numpoints++;
+			double delta = cur_val - mean;
+			mean += delta / numpoints;
+			M2 += delta *( cur_val - mean);
+			return;
+		}
+		double getMean() {
+			return mean;
+		}
+		double getSD() {
+			return sqrt (M2 / (numpoints - 1));
+		}
+
+
+};
+
+
 template<class T>
 string make_string(const T & s) {
 	ostringstream o;
@@ -171,20 +203,20 @@ string read_genome(string filename) {
 /*
 //assumes each line is a separate contig
 string read_pseudo_genome(istream inFile) {
-	string genome;
+string genome;
 
-	//read the file into genome
-	char c;
-	while ((c = inFile.rdbuf()->sbumpc()) != EOF) {
-		if (c != '\n') {
-			genome.push_back(c);
-		} else {
-			genome.push_back('$');
-		}
-	}
-	return genome;
+//read the file into genome
+char c;
+while ((c = inFile.rdbuf()->sbumpc()) != EOF) {
+if (c != '\n') {
+genome.push_back(c);
+} else {
+genome.push_back('$');
 }
-*/
+}
+return genome;
+}
+ */
 
 
 
