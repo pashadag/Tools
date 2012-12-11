@@ -1,12 +1,32 @@
-COPT =  -g -Wall -Wno-sign-compare -O -fPIC -fexceptions -DNO_CPLEX # flags #-DNDEBUG
+COPT =  -g -Wall -Wno-sign-compare -O -fPIC -fexceptions # flags #-DNDEBUG
 CLNFLAGS = -L/home/pashadag/lib/ -lm -lpthread
 CC    = g++
 
 
 # Default target
-all: myjoin filter_genome ins_sort add_commas sbsJoin sbsJoin2 sbsJoin3 extract concat
+all: myjoin filter_genome ins_sort add_commas sbsJoin sbsJoin2 sbsJoin3 extract concat getMeanSD calcPearson generate_random_genome annotate_repeats hardmask
 	@echo "compilation done"
 
+annotate_repeats: annotate_repeats.o
+	$(CC) annotate_repeats.o -o annotate_repeats
+annotate_repeats.o : annotate_repeats.cpp
+	$(CC) -c $(COPT) annotate_repeats.cpp -o annotate_repeats.o
+hardmask: hardmask.o
+	$(CC) hardmask.o -o hardmask 
+hardmask.o : hardmask.cpp
+	$(CC) -c $(COPT) hardmask.cpp -o hardmask.o
+generate_random_genome: generate_random_genome.o
+	$(CC) generate_random_genome.o -o generate_random_genome
+generate_random_genome.o : generate_random_genome.cpp
+	$(CC) -c $(COPT) generate_random_genome.cpp -o generate_random_genome.o
+calcPearson: calcPearson.o
+	$(CC) calcPearson.o -o calcPearson
+calcPearson.o : calcPearson.cpp
+	$(CC) -c $(COPT) calcPearson.cpp -o calcPearson.o
+getMeanSD: getMeanSD.o
+	$(CC) getMeanSD.o -o getMeanSD
+getMeanSD.o : getMeanSD.cpp
+	$(CC) -c $(COPT) getMeanSD.cpp -o getMeanSD.o
 sbsJoin3: sbsJoin3.o
 	$(CC) sbsJoin3.o -o sbsJoin3
 sbsJoin3.o : sbsJoin3.cpp
