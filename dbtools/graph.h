@@ -12,6 +12,7 @@
 #include<queue>
 #include<cstdarg>
 #include<algorithm>
+#include<limits>
 
 using namespace std;
 #include "defs.h"

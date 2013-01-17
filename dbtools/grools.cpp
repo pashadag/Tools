@@ -11,6 +11,7 @@
 #include<queue>
 #include<cstdarg>
 #include<algorithm>
+#include<unistd.h>
 //#include<mysql++.h>
 //#include <boost/foreach.hpp>
 
