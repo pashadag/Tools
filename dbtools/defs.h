@@ -200,6 +200,45 @@ string read_genome(string filename) {
 	return genome;
 }
 
+//returns the sequences in the fasta files, separated by a '$' symbol
+string read_fasta(string filename) {
+	string seq;
+
+	ifstream inFile;
+	string line;
+	open_file(inFile, filename);
+
+	getline(inFile, line);
+	if (inFile.eof()) return seq;
+
+	if ((line.length() == 0) || (line.at(0) != '>')) {
+		cerr << "Error reading fast file. Expecting a line that begins with \'>\', but instead get: " << line << ".\n";
+		exit(1);
+	}
+	getline(inFile, line);
+
+	while (!inFile.eof()) {
+		if (line.length() == 0) {
+			cerr << "Error reading fasta file. Unexpected empty line.\n";
+			exit(1);
+		}
+		if (line.at(0) == '>') {
+			seq.push_back('$'); //add a separator 
+		} else {
+			//append to the sequnce.
+			seq.append(line);
+		}
+		getline(inFile, line);
+		//cerr << "Error reading fast file. Expecting a line that begins with \'>\', but instead get: " << line << ".\n";
+	}
+
+	inFile.close();
+	//cout << "Sequence: " << seq << ".\n";
+	return seq;
+}
+
+
+
 /*
 //assumes each line is a separate contig
 string read_pseudo_genome(istream inFile) {

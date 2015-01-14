@@ -58,19 +58,6 @@ class suffixArray {
 			complt.genSize = genSize;
 			sort(sa.begin(), sa.end(), complt);
 		}
-		/*void build(int kmersize, char skip) {
-			cerr << "Building suffix array...\n";
-			for (int i = 0; i < genSize; i++) {
-				if (genome.find_first_of('$', i, kmersize) != string::npos) continue;
-				sa.push_back(i);
-			}
-
-			sah__compltNum2NumFunctor complt; 
-			complt.genome = genome;
-			complt.genSize = genSize;
-			sort(sa.begin(), sa.end(), complt);
-		}
-		*/
 
 		void save(string filename, int k = 0) {
 			ofstream out;

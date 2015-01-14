@@ -21,6 +21,7 @@ string sbuf;
 #include "defs.h"
 #include "collapsed_db_from_genome.h"
 #include "sa.h"
+#include "kmerCounter.h"
 
 void coverage(suffixArray & sa, string filename) {
 	string contig;
@@ -299,6 +300,9 @@ void usage(int argc, char * argv[]) {
 	cerr << "Usage: " << argv[0] << " sa -g genome -o outfile {-k kmersize}" << endl;
 	cerr << "\tThis program builds the (single-stranded) suffix array of genome.fa and outputs it to outfile.sa. If k is specified, then a second column is added with the corresponding k-mer.\n";
 	cerr << endl;
+	cerr << "Usage: " << argv[0] << " kmercounter -g fastain -o outfile -k kmersize -d" << endl;
+	cerr << "\tThis program outputs the kmers in the fastain fasta file to the file outfile.kc. The -d options sets all counts to 1. Kmers are treated equivalently to their reverse complements, and the printed kmer is the smaller of itself and its revers complement. fastain can be any fasta file, allowing multiple lines or contigs. The string is treated non-circular. The output goes to outfile.\n";
+	cerr << endl;
 	cerr << "Usage: " << argv[0] << " map -g genome { -l column -f}}" << endl;
 	cerr << "\tThis program maps (in double-stranded fashion) a set of contigs (from stdin) to a genome which has a suffix array built (genome.sa). If specified, then the column is interpreted as a contig, otherwise the file is treated as a fasta file. The ouput appends the original file with a final column that has 'map' or -1 (with -f, a location of a hit instead of map).\n";
 	cerr << endl;
@@ -333,6 +337,7 @@ int main(int argc, char * argv[]) {
 	string genomeBase;
 	string base;
 	string inputMode = "fasta";
+	bool duplicateforbidmode = false;
 	int nval = 50;
 	int column = -1;
 	int kmersize = -1;
@@ -340,11 +345,10 @@ int main(int argc, char * argv[]) {
 
 	char ch;
 
-	while ((ch = getopt(argc, argv, "l:g:k:n:o:c:i:f")) != -1) {
+	while ((ch = getopt(argc, argv, "l:g:k:n:o:c:i:fd")) != -1) {
 		switch (ch) {
 			case 'g':
 				genomeBase = optarg;
-				genome = read_genome(genomeBase + ".fa");
 				break;
 			case 'k':
 				kmersize = atoi(optarg);
@@ -364,6 +368,9 @@ int main(int argc, char * argv[]) {
 			case 'c':
 				contigsFilename = optarg;
 				break;
+			case 'd':
+				duplicateforbidmode = true;
+				break;
 			case 'i':
 				inputMode = optarg;
 				if (inputMode != "raw" && inputMode != "fasta") {
@@ -379,6 +386,17 @@ int main(int argc, char * argv[]) {
 	}
 
 	string task = argv[optind];
+
+	if (task == "kmercounter") {
+		if (genomeBase != "") {
+			genome = read_fasta(genomeBase);
+		}
+	} else {
+		if (genomeBase != "") {
+			genome = read_fasta(genomeBase + ".fa");
+		}
+	}
+
 	if (task == "db") {
 		if (genome == "" || base == "" || kmersize == -1 ) { //should be one other parameter
 			cerr << "Invalid parameters.\n";
@@ -398,6 +416,14 @@ int main(int argc, char * argv[]) {
 		sa.build();
 		if (kmersize == -1) kmersize=0;
 		sa.save(base + ".sa", kmersize);
+	} else if (task == "kmercounter") {
+		if (genome == "" || base == "" || kmersize == -1) { 
+			cerr << "Invalid parameters.\n";
+			usage(argc, argv);
+		}
+		kmerCounter kc(genome, kmersize);
+		kc.build('$');
+		kc.save(base, duplicateforbidmode);
 	} else if (task == "map") {
 		if (genome == "" ) { //should be one other parameter
 			cerr << "Invalid parameters.\n";
