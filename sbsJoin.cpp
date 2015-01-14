@@ -1,6 +1,6 @@
 #include<cassert>
 #include<cmath>
-#include<string>
+#include<string.h>
 #include<iostream>
 #include<sstream>
 #include<fstream>
@@ -11,6 +11,7 @@
 #include<queue>
 #include<cstdarg>
 #include<algorithm>
+//#include<stdio.h>
 //#include<mysql++.h>
 //#include <boost/foreach.hpp>
 

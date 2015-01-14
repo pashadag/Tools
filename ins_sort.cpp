@@ -10,6 +10,7 @@
 #include<list>
 #include<cstdarg>
 #include<algorithm>
+#include<unistd.h>
 
 using namespace std;
 bool softBreak = false;

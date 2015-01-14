@@ -11,7 +11,7 @@
 #include<queue>
 #include<cstdarg>
 #include<algorithm>
-#include "meanSD.h"
+#include "dbtools/defs.h"
 
 using namespace std;
 ostringstream oMsg;
@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
 	vector< double > xVals;
 	vector< double > yVals;
 
-	meanSD xCalc, yCalc;
+	MeanSD xCalc, yCalc;
 
 	while (getline(cin, sbuf)) { //first pass to get the mean
 		istringstream line(sbuf);
